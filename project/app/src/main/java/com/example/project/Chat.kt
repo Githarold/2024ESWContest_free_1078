@@ -256,7 +256,7 @@ class Chat : AppCompatActivity() {
         val batender = openai.assistant(
             request = AssistantRequest(
                 name = "AI Bartender",
-                model = ModelId("gpt-4-turbo"),
+                model = ModelId("gpt-4o"),
                 instructions = """
                     You are an AI bartender. First, receive the inventory as a dictionary named 'example_dict',
                     then consider the user's mood and preferences to recommend a cocktail.
