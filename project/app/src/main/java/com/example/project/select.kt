@@ -2,7 +2,9 @@ package com.example.project
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -12,23 +14,27 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import org.json.JSONObject
+import java.io.BufferedReader
 import java.io.IOException
+import java.io.InputStreamReader
 import java.io.OutputStream
+import java.util.UUID
 
 class select : AppCompatActivity() {
     private val REQUEST_ENABLE_BT = 1
     private val BLUETOOTH_PERMISSION_REQUEST_CODE = 100
     private lateinit var bluetoothAdapter: BluetoothAdapter
+    private val SERVER_DEVICE_ADDRESS = "DC:A6:32:7B:04:EC"  // 서버 기기의 MAC 주소를 입력해야 합니다. 라즈베리파이
+//    private val SERVER_DEVICE_ADDRESS = "E0:0A:F6:49:E5:1C"
+    private val SERVER_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")  // SPP UUID
+    private lateinit var bluetoothSocket: BluetoothSocket
     private var isCommunicating = false
-    private var receivedDataList: List<Int> = listOf()
-    private var recipeDataList: List<Int> = listOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,16 +79,7 @@ class select : AppCompatActivity() {
 
         val name = jsonObject.getString("name")
         val description = jsonObject.getString("description")
-        val head = jsonObject.getString("head")
         val recipe = jsonObject.getString("recipe")
-        val order = jsonObject.getString("order")
-
-        val receivedData = intent.getStringExtra("RECEIVED_DATA") ?: ""
-        receivedDataList = processData(receivedData)
-        recipeDataList = processData(recipe)
-
-        Log.d("SelectActivity", "Received Data List: $receivedDataList")
-        Log.d("SelectActivity", "Recipe Data List: $recipeDataList")
 
         val cocktailImg = findViewById<ImageView>(R.id.cocktail_img)
         val imageId = resources.getIdentifier(cocktailName, "drawable", packageName)
@@ -96,25 +93,60 @@ class select : AppCompatActivity() {
 
         val selectBtn = findViewById<Button>(R.id.select_cocktail)
 
-        if (!validateData(receivedDataList, recipeDataList)) {
-            selectBtn.isEnabled = false
-        }
-        else {
-            selectBtn.isEnabled = true
-        }
-
-        val send_data = "$head\n\n$recipe\n\n$order"
         selectBtn.setOnClickListener {
-            val builder = AlertDialog.Builder(this)
-            builder.setMessage("해당 칵테일을 제조하시겠습니까?")
-                .setPositiveButton("예") { dialog, id ->
-                    sendData(send_data)
-                    Log.d("recipe", send_data)
+            synchronized(this) {
+                if (isCommunicating) {
+                    Log.d("Bluetooth", "Communication is already in progress.")
+                    return@synchronized
                 }
-                .setNegativeButton("아니오") { dialog, id ->
-                    dialog.dismiss()
+                isCommunicating = true
+            }
+
+            Thread {
+                var isConnected = false
+                try {
+                    val device = bluetoothAdapter.getRemoteDevice(SERVER_DEVICE_ADDRESS)
+                    bluetoothSocket = device.createRfcommSocketToServiceRecord(SERVER_UUID)
+                    bluetoothSocket.connect()
+                    isConnected = true
+
+                    val outStream: OutputStream = bluetoothSocket.outputStream
+                    val inStream = bluetoothSocket.inputStream
+
+                    val data = recipe
+                    outStream.write(data.toByteArray())
+                    Log.d("Bluetooth", "Data sent: $data")
+
+                    // 수신 버퍼 설정
+                    val buffer = ByteArray(1024)
+                    val bytesRead = inStream.read(buffer)
+                    if (bytesRead == -1) {
+                        Log.d("Bluetooth", "Peer socket closed")
+                    } else {
+                        val receivedData = String(buffer, 0, bytesRead)
+                        Log.d("Bluetooth", "Data received: $receivedData")
+
+                        runOnUiThread{
+                            Toast.makeText(applicationContext, "Data received: $receivedData", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                } finally {
+                    if (isConnected) {
+                        try {
+                            bluetoothSocket.close()  // 소켓을 안전하게 닫습니다.
+                            Log.d("Bluetooth", "Socket closed")
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                    synchronized(this) {
+                        isCommunicating = false
+                    }
                 }
-            builder.create().show()
+            }.start()
         }
 
         val backBtn = findViewById<Button>(R.id.backBtn)
@@ -122,68 +154,22 @@ class select : AppCompatActivity() {
             finish()
         }
     }
+}
 
-    fun sendData(data: String) {
-        synchronized(this) {
-            if (isCommunicating) {
-                Log.d("Bluetooth", "Communication is already in progress.")
-                return@synchronized
-            }
-            isCommunicating = true
-        }
-
-        val communicationThread = Thread {
-            try {
-                val socket = BluetoothManager.getBluetoothSocket()
-                if (socket == null || !socket.isConnected) {
-                    runOnUiThread {
-                        Toast.makeText(this, "Not connected to any device", Toast.LENGTH_SHORT).show()
-                    }
-                    return@Thread
-                }
-
-                val outStream: OutputStream = socket.outputStream
-                outStream.write(data.toByteArray())
-                Log.d("Bluetooth", "Data sent: $data")
-
-                // 수신 버퍼 설정
-                val buffer = ByteArray(1024)
-                val inStream = socket.inputStream
-                val bytesRead = inStream.read(buffer)
-                if (bytesRead == -1) {
-                    Log.d("Bluetooth", "Peer socket closed")
-                } else {
-                    val receivedData = String(buffer, 0, bytesRead)
-                    Log.d("Bluetooth", "Data received: $receivedData")
-
-                    runOnUiThread {
-                        Toast.makeText(applicationContext, "Data received: $receivedData", Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-            } catch (e: IOException) {
-                e.printStackTrace()
-            } finally {
-                synchronized(this) {
-                    isCommunicating = false
-                }
-                Thread.currentThread().interrupt()
-            }
-        }
-        communicationThread.start()
+fun readTextFile(context: Context, fileName: String): String {
+    val resourceId = context.resources.getIdentifier(fileName, "raw", context.packageName)
+    if (resourceId == 0) {
+        throw IllegalArgumentException("The given file name does not correspond to a resource in raw folder.")
     }
 
-    private fun processData(data: String): List<Int> {
-        return data.split("\n").mapNotNull { it.toIntOrNull() }
-    }
-
-    private fun validateData(receivedData: List<Int>, recipeData: List<Int>): Boolean {
-        if (receivedData.size != recipeData.size) return false
-        for (i in receivedData.indices) {
-            if (receivedData[i] - recipeData[i] <= 2 && recipeData[i]>0) {
-                return false
-            }
+    context.resources.openRawResource(resourceId).use { inputStream ->
+        val reader = BufferedReader(InputStreamReader(inputStream))
+        val content = StringBuilder()
+        var line: String? = reader.readLine()
+        while (line != null) {
+            content.append(line)
+            line = reader.readLine()
         }
-        return true
+        return content.toString()
     }
 }
