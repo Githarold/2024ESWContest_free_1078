@@ -9,6 +9,8 @@ import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -17,70 +19,54 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import org.json.JSONException
-import org.json.JSONObject
 import java.io.IOException
-import okhttp3.OkHttpClient;
-import okhttp3.RequestBody
-import okhttp3.Request
-import okhttp3.Request.Builder
-import okhttp3.MediaType
-import okhttp3.MediaType.Companion.toMediaType
 import android.view.inputmethod.EditorInfo
 import android.view.KeyEvent
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONArray
-import com.google.gson.Gson
-import java.util.concurrent.TimeUnit
-import com.aallam.openai.*
 import com.aallam.openai.api.BetaOpenAI
-import com.aallam.openai.client.*
 import com.aallam.openai.client.OpenAI
 import com.aallam.openai.api.assistant.*
-import com.aallam.openai.api.core.RequestOptions
 import com.aallam.openai.api.core.Role
 import com.aallam.openai.api.core.Status
-import com.aallam.openai.api.http.Timeout
 import com.aallam.openai.api.message.MessageContent
 import com.aallam.openai.api.message.MessageRequest
 import com.aallam.openai.api.model.ModelId
 import com.aallam.openai.api.run.RunRequest
-import com.aallam.openai.api.thread.ThreadId
 import kotlinx.coroutines.*
 import java.io.OutputStream
-import kotlin.math.roundToInt
-import kotlin.time.Duration.Companion.seconds
 
 class Chat : AppCompatActivity() {
-    var recycler_view: RecyclerView? = null
-    var tv_welcome: TextView? = null
-    var message_edit: EditText? = null
-    var send_btn: Button? = null
-    var messageList: MutableList<Message>? = null
-    var messageAdapter: MessageAdapter? = null
-    var client: OkHttpClient = OkHttpClient()
+    private var recyclerView: RecyclerView? = null
+    private var tvWelcome: TextView? = null
+    private var messageEdit: EditText? = null
+    private var sendBtn: Button? = null
+    private var messageList: MutableList<Message>? = null
+    private var messageAdapter: MessageAdapter? = null
     private val REQUEST_ENABLE_BT = 1
     private val BLUETOOTH_PERMISSION_REQUEST_CODE = 100
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private var isCommunicating = false
+    private val handler = Handler(Looper.getMainLooper())
+    private var dotsRunnable: Runnable? = null
+    private var dots = ""
+    private var recommendReason: String? = null
+    private var currentCharIndex = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
-        recycler_view = findViewById<RecyclerView>(R.id.chat_recyclerView)
-        tv_welcome = findViewById<TextView>(R.id.tv_welcome)
-        message_edit = findViewById<EditText>(R.id.message_edit)
-        send_btn = findViewById<Button>(R.id.send_btn)
-        recycler_view!!.setHasFixedSize(true)
+        recyclerView = findViewById(R.id.chat_recyclerView)
+        tvWelcome = findViewById(R.id.tv_welcome)
+        messageEdit = findViewById(R.id.message_edit)
+        sendBtn = findViewById(R.id.send_btn)
+        recyclerView!!.setHasFixedSize(true)
         val manager = LinearLayoutManager(this)
-        manager.setStackFromEnd(true)
-        recycler_view!!.setLayoutManager(manager)
+        manager.stackFromEnd = true
+        recyclerView!!.layoutManager = manager
         messageList = ArrayList()
         messageAdapter = MessageAdapter(messageList!!, this)
-        recycler_view!!.setAdapter(messageAdapter)
+        recyclerView!!.setAdapter(messageAdapter)
 
         // 블루투스 권한 요청
         if (ContextCompat.checkSelfPermission(
@@ -91,10 +77,6 @@ class Chat : AppCompatActivity() {
         }
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-        if (bluetoothAdapter == null) {
-            Log.e("Bluetooth", "Device doesn't support Bluetooth")
-            return
-        }
 
         // 블루투스 활성화 요청
         if (!bluetoothAdapter.isEnabled) {
@@ -102,11 +84,11 @@ class Chat : AppCompatActivity() {
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
         }
 
-        send_btn!!.setOnClickListener(View.OnClickListener {
+        sendBtn!!.setOnClickListener {
             sendMessage()
-        })
+        }
 
-        message_edit!!.setOnEditorActionListener { v, actionId, event ->
+        messageEdit!!.setOnEditorActionListener { _, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_SEND ||
                 (event?.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER)
             ) {
@@ -125,36 +107,111 @@ class Chat : AppCompatActivity() {
      */
 
     // 메시지를 보내는 함수
-    fun sendMessage() {
-        val question = message_edit!!.getText().toString().trim { it <= ' ' }
+    private fun sendMessage() {
+        val question = messageEdit!!.getText().toString().trim { it <= ' ' }
         if (question.isEmpty()) {
             addToChat("아무것도 입력하지 않으셨네요. 어떤 칵테일을 드시고 싶은가요?", Message.SENT_BY_BOT, false)
-            tv_welcome!!.setVisibility(View.GONE)
+            tvWelcome!!.visibility = View.GONE
         } else {
             addToChat(question, Message.SENT_BY_ME, false)
+            startDotsAnimation() // 메시지를 보낼 때 애니메이션 시작
             CoroutineScope(Dispatchers.Main).launch {
                 callAPI(question)
             }
-            message_edit!!.text.clear()
-            tv_welcome!!.setVisibility(View.GONE)
+            messageEdit!!.text.clear()
+            tvWelcome!!.visibility = View.GONE
         }
     }
 
 
     // 채팅 메시지를 추가하는 함수
-    fun addToChat(message: String?, sentBy: String?, hasButton: Boolean = false) {
+    private fun addToChat(message: String?, sentBy: String?, hasButton: Boolean = false) {
         runOnUiThread {
             messageList!!.add(Message(message, sentBy, hasButton))
             messageAdapter!!.notifyDataSetChanged()
-            recycler_view!!.smoothScrollToPosition(messageAdapter!!.getItemCount())
+            recyclerView!!.scrollToPosition(messageAdapter!!.getItemCount()-1)
         }
     }
 
     // 응답 메시지를 추가하는 함수
-    fun addResponse(response: String?, hasButton: Boolean = false) {
-        messageList!!.removeAt(messageList!!.size - 1)
-        addToChat(response, Message.SENT_BY_BOT, hasButton)
+    private fun addResponse(response: String?, hasButton: Boolean = false) {
+        stopDotsAnimation() // 응답을 추가할 때 기존 애니메이션 중지
+        if (messageList!!.isNotEmpty() && messageList!!.last().sentBy == Message.SENT_BY_BOT) {
+            messageList!!.removeAt(messageList!!.size - 1)
+        }
+        recommendReason = response
+        addToChat("", Message.SENT_BY_BOT, hasButton) // 빈 문자열로 새로운 메시지 추가
+        startTextAnimation() // 새로운 애니메이션 시작
     }
+
+    // 애니메이션 시작 함수
+    private fun startDotsAnimation() {
+        dots = ""
+        dotsRunnable = object : Runnable {
+            override fun run() {
+                dots += "."
+                if (dots.length > 3) dots = ""
+                updateDotsMessage()
+                handler.postDelayed(this, 500)
+            }
+        }
+        handler.post(dotsRunnable!!)
+    }
+
+    // 애니메이션 중지 함수
+    private fun stopDotsAnimation() {
+        handler.removeCallbacks(dotsRunnable!!)
+        dotsRunnable = null
+    }
+
+    // 애니메이션 메시지 업데이트 함수
+    private fun updateDotsMessage() {
+        if (messageList!!.isNotEmpty() && messageList!!.last().sentBy == Message.SENT_BY_BOT) {
+            messageList!!.last().message = dots
+            messageAdapter!!.notifyItemChanged(messageList!!.size - 1, "payload")
+            recyclerView!!.scrollToPosition(messageAdapter!!.itemCount - 1)
+        }
+    }
+
+    private fun startTextAnimation() {
+        currentCharIndex = 0
+        dotsRunnable = object : Runnable {
+            override fun run() {
+                if (recommendReason != null && currentCharIndex < recommendReason!!.length) {
+                    updateTextMessage(recommendReason!![currentCharIndex].toString())
+                    currentCharIndex++
+                    handler.postDelayed(this, 50)
+                } else {
+                    stopTextAnimation()
+                }
+            }
+        }
+        handler.post(dotsRunnable!!)
+    }
+
+    // 애니메이션 중지 함수
+    private fun stopTextAnimation() {
+        handler.removeCallbacks(dotsRunnable!!)
+        dotsRunnable = null
+    }
+
+    // 애니메이션 메시지 업데이트 함수
+    private fun updateTextMessage(char: String) {
+        if (messageList!!.isNotEmpty() && messageList!!.last().sentBy == Message.SENT_BY_BOT) {
+            messageList!!.last().message += char
+            messageAdapter!!.notifyItemChanged(messageList!!.size - 1)
+            recyclerView!!.post {
+                val lastItemPosition = messageAdapter!!.itemCount - 1
+                val lastVisibleItemPosition = (recyclerView!!.layoutManager as LinearLayoutManager).findLastVisibleItemPosition()
+
+                if (lastItemPosition == lastVisibleItemPosition) {
+                    recyclerView!!.scrollToPosition(lastItemPosition)
+                }
+            }
+        }
+    }
+
+
 
     // OpenAI API를 호출, 사용자 입력에 부합하는 칵테일을 추천한 뒤
     // addResponse 함수를 호출해 응답 메시지로 추가하는 함수
@@ -162,7 +219,6 @@ class Chat : AppCompatActivity() {
     suspend fun callAPI(question: String?){
         messageList!!.add(Message("...", Message.SENT_BY_BOT, false))
         val openai = OpenAI( token = MY_SECRET_KEY)
-        val real_user_mood = question
 
         // Few-shot Learning을 위한 예시 입력 선언
         val exampleInputDict = mapOf(
@@ -200,7 +256,7 @@ class Chat : AppCompatActivity() {
         val batender = openai.assistant(
             request = AssistantRequest(
                 name = "AI Bartender",
-                model = ModelId("gpt-4-turbo"),
+                model = ModelId("gpt-4o"),
                 instructions = """
                     You are an AI bartender. First, receive the inventory as a dictionary named 'example_dict',
                     then consider the user's mood and preferences to recommend a cocktail.
@@ -220,7 +276,7 @@ class Chat : AppCompatActivity() {
             threadId = thread.id,
             request = MessageRequest(
                 role = Role.User,
-                content = real_user_mood!!
+                content = question!!
             )
         )
 
@@ -232,12 +288,13 @@ class Chat : AppCompatActivity() {
             println(textContent.text.value)
         }
 
+
         // AI 바텐더에게 실행 요청
         val run = openai.createRun(
             threadId = thread.id,
             request = RunRequest(
                 assistantId = batender.id,
-                instructions ="""
+                instructions = """
                             Ingredients in order: [Vodka, Rum, Gin, Triple Sec, Diluted Lemon Juice, Orange Juice, Grapefruit Juice, Cranberry Juice]
 
                             Example 1:
@@ -269,7 +326,7 @@ class Chat : AppCompatActivity() {
                             Output: $exampleGptResponse7 
                             
                             You have to respond in Korean:
-                            Input: Inventory - $realInputDict, Mood/Preference - '$real_user_mood'
+                            Input: Inventory - $realInputDict, Mood/Preference - '$question'
                             Output: 
                                             """.trimIndent())
         )
@@ -287,7 +344,7 @@ class Chat : AppCompatActivity() {
         val messageText = textContent.text.value
         println(messageText)
 
-        if (messageText != null && messageText.isNotEmpty()){
+        if (messageText.isNotEmpty()) {
             val parts = messageText.split("@")
             if (parts.size > 1) {
                 val recommendReason = parts[0]
@@ -295,7 +352,7 @@ class Chat : AppCompatActivity() {
                 recipeString = parts[1]
                 Log.d("recipeString", recipeString!!)
 
-                val list = recipeString!!.trim('[', ']').split(",").map { it.trim().toInt()}
+                val list = recipeString!!.trim('[', ']').split(",").map { it.trim().toInt() }
                 println(list)
 
                 if (list.sum() > 7) {
@@ -303,7 +360,7 @@ class Chat : AppCompatActivity() {
                     addResponse(recommendReason, false)
                 } else {
 
-                    var recipe = list.joinToString(separator = "\n")
+                    val recipe = list.joinToString(separator = "\n")
                     recipeString = "2\n\n$recipe\n\n0\n0\n0\n0\n0\n0\n0\n0"
                     Log.d("recipeString", recipeString!!)
 
@@ -312,7 +369,7 @@ class Chat : AppCompatActivity() {
             } else {
                 addResponse(messageText, false)
             }
-        }else{
+        } else {
             addResponse("Err.. Try again", false)
         }
 
@@ -371,8 +428,7 @@ class Chat : AppCompatActivity() {
 
     // 클래스 레벨에서 접근 가능한 객체 멤버 선언
     companion object {
-        val JSON: MediaType = "application/json; charset=utf-8".toMediaType()
-        private const val MY_SECRET_KEY = ""
+        private const val MY_SECRET_KEY = BuildConfig.API_KEY
         var recipeString: String? = null
     }
 }
