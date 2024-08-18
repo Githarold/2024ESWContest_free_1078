@@ -1,3 +1,9 @@
+/**
+ * SetBuildOrder.kt
+ * 사용자에게 빌드 순서를 정하게 하는 액티비티
+ * 드래그 앤 드롭으로 빌드 순서를 결정한 뒤 서버에 데이터를 보낸다
+ */
+
 package com.example.project
 
 import android.content.Intent
@@ -49,16 +55,17 @@ class SetBuildOrder : AppCompatActivity() {
         val selectBtn = findViewById<Button>(R.id.selectBtn)
         selectBtn.setOnClickListener {
             val currentList = adapter.getItems()
-            val formattedData = formatDataForCommunication(currentList)
-            println(formattedData)
-//            val dataToSend = currentList.joinToString(",") { it.toString() }
-            println(currentList)
-//            println(dataToSend)
-//            connectToServer()
+            val ingredientOrderList = getIngredientOrderList(currentList)
+            val formattedDataList = getIngredientQuantityList(receivedList)
+            val formattedData = formatDataForCommunicationWithOrder(formattedDataList, ingredientOrderList)
+            connectToServer(formattedData)
         }
     }
 
 
+    /**
+     * 함수 정의 부분
+     */
     private fun  connectToServer(dataToSend:String){
         Thread {
             try {
@@ -87,4 +94,49 @@ class SetBuildOrder : AppCompatActivity() {
             }
         }.start()
     }
+}
+
+// 빌드 순서를 내용으로 하는 리스트를 만드는 함수
+fun getIngredientOrderList(currentList: List<Ingredient>): String {
+    val stringBuilder = StringBuilder()
+    val totalIngredients = 8 // 전체 재료 개수
+    for (ingredient in currentList) {
+        stringBuilder.append("${ingredient.quantity}\n")
+    }
+    // 나머지 요소는 빈 줄로 채움
+    val remainingEmptyLines = totalIngredients - currentList.size
+    repeat(remainingEmptyLines) {
+        stringBuilder.append("0\n")
+    }
+    return stringBuilder.toString()
+}
+
+// 서버로 보내기 위해 데이터 형식을 알밪게 바꿔주는 함수
+fun getIngredientQuantityList(ingredients: ArrayList<Ingredient>?): String {
+    //TODO
+    val header = "3" // 순서 포함하므로 헤드 3
+
+    val body = StringBuilder()
+
+    // ingredients는 항상 ex1에서 ex8까지 고정된 순서로 있다고 가정
+    val expectedIngredients = listOf("ex1", "ex2", "ex3", "ex4", "ex5", "ex6", "ex7", "ex8")
+    expectedIngredients.forEach { ingredientName ->
+        val quantity = ingredients?.find { it.name == ingredientName }?.quantity ?: 0
+        body.append("$quantity\n")
+    }
+
+    return "$header\n\n${body.toString()}"
+}
+
+// 서버로 보내기 위해 데이터 형식을 알밪게 바꿔주는 함수(순서 포함)
+fun formatDataForCommunicationWithOrder(receivedList: String, ingredientOrderList: String): String {
+    val formattedData = StringBuilder()
+
+    formattedData.append(receivedList)
+
+    // ingredientOrderList를 추가
+    formattedData.append("\n\n") // '\n\n' 추가
+    formattedData.append(ingredientOrderList)
+
+    return formattedData.toString()
 }

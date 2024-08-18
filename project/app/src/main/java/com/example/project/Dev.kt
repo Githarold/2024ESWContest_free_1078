@@ -1,25 +1,13 @@
-/**
- * select.kt
- * 칵테일 선택하기 액티비티
- * json 파일로부터 칵테일 이름, 상세 설명, 레시피를 읽어 화면에 표시한다
- * 사용자는 해당 액티비티에서 칵테일을 선택할 수 있다. 즉, 서버로 데이터를 전송한다
- */
-
-
 package com.example.project
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -27,19 +15,28 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import org.json.JSONObject
-import java.io.BufferedReader
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import java.io.IOException
-import java.io.InputStreamReader
 import java.io.OutputStream
 import java.util.UUID
 
-class select : AppCompatActivity() {
+class Dev : AppCompatActivity() {
+    private var totalQuantity = 0
+    private val ingredientsList = listOf(
+        Ingredient("ex1"),
+        Ingredient("ex2"),
+        Ingredient("ex3"),
+        Ingredient("ex4"),
+        Ingredient("ex5"),
+        Ingredient("ex6"),
+        Ingredient("ex7"),
+        Ingredient("ex8"),
+    )
     private val REQUEST_ENABLE_BT = 1
     private val BLUETOOTH_PERMISSION_REQUEST_CODE = 100
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private val SERVER_DEVICE_ADDRESS = "DC:A6:32:7B:04:EC"  // 서버 기기의 MAC 주소를 입력해야 합니다. 라즈베리파이
-//    private val SERVER_DEVICE_ADDRESS = "E0:0A:F6:49:E5:1C"
     private val SERVER_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")  // SPP UUID
     private lateinit var bluetoothSocket: BluetoothSocket
     private var isCommunicating = false
@@ -47,60 +44,54 @@ class select : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_select)
+        setContentView(R.layout.activity_custom)
 
-        // 블루투스 권한 요청
+        // 시스템 바 인셋 적용
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+
+        // Intent로부터 데이터를 받음
+        val receivedData = intent.getStringExtra("receivedData")
+        if (receivedData != null) {
+            val quantities = receivedData.split("\n")
+            if (quantities.size == ingredientsList.size) {
+                for (i in ingredientsList.indices) {
+                    ingredientsList[i].quantity = quantities[i].toIntOrNull() ?: 0
+                }
+            } else {
+                Toast.makeText(this, "데이터의 크기가 일치하지 않습니다.", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(this, "수신된 데이터가 없습니다.", Toast.LENGTH_SHORT).show()
+        }
+
         if (ContextCompat.checkSelfPermission(
                 this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(
                 this, arrayOf(Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN),
                 BLUETOOTH_PERMISSION_REQUEST_CODE)
         }
-
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         if (bluetoothAdapter == null) {
             Log.e("Bluetooth", "Device doesn't support Bluetooth")
             return
         }
 
-        // 블루투스 활성화 요청
-        if (!bluetoothAdapter.isEnabled) {
-            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
+        // RecyclerView를 찾고 어댑터 설정
+        val recyclerView: RecyclerView = findViewById(R.id.cocktail_ingredients_list)
+        val adapter = IngredientAdapter(ingredientsList)
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
+        val backBtn = findViewById<Button>(R.id.backBtn)
+        backBtn.setOnClickListener {
+            finish()
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-        val cocktailName = intent.getStringExtra("COCKTAIL_NAME") ?: return
-        val fileName = "$cocktailName.json"
-        val json = try {
-            assets.open(fileName).reader().readText()
-        } catch (e: IOException) {
-            e.printStackTrace()
-            return  // 파일이 없거나 읽을 수 없는 경우 함수를 종료합니다.
-        }
-        val jsonObject = JSONObject(json)
-
-        val name = jsonObject.getString("name")
-        val description = jsonObject.getString("description")
-        val recipe = jsonObject.getString("recipe")
-
-        val cocktailImg = findViewById<ImageView>(R.id.cocktail_img)
-        val imageId = resources.getIdentifier(cocktailName, "drawable", packageName)
-        cocktailImg.setImageResource(imageId)
-
-        val cocktailTextView = findViewById<TextView>(R.id.textView)
-        cocktailTextView.text = description
-
-        val cocktailNameView = findViewById<TextView>(R.id.cocktail_name)
-        cocktailNameView.text = name
-
-        val selectBtn = findViewById<Button>(R.id.select_cocktail)
-        
-
+        val selectBtn = findViewById<Button>(R.id.selectBtn)
         selectBtn.setOnClickListener {
             synchronized(this) {
                 if (isCommunicating) {
@@ -121,7 +112,8 @@ class select : AppCompatActivity() {
                     val outStream: OutputStream = bluetoothSocket.outputStream
                     val inStream = bluetoothSocket.inputStream
 
-                    val data = recipe
+                    // ingredientsList의 quantity 값을 문자열로 변환하고 '\n'으로 연결
+                    val data = "4\n\n" + ingredientsList.joinToString(separator = "\n") { it.quantity.toString() }
                     outStream.write(data.toByteArray())
                     Log.d("Bluetooth", "Data sent: $data")
 
@@ -134,7 +126,8 @@ class select : AppCompatActivity() {
                         val receivedData = String(buffer, 0, bytesRead)
                         Log.d("Bluetooth", "Data received: $receivedData")
 
-                        runOnUiThread{
+                        // 수신된 데이터를 UI 스레드에서 토스트 메시지로 표시
+                        runOnUiThread {
                             Toast.makeText(applicationContext, "Data received: $receivedData", Toast.LENGTH_SHORT).show()
                         }
                     }
@@ -155,11 +148,6 @@ class select : AppCompatActivity() {
                     }
                 }
             }.start()
-        }
-
-        val backBtn = findViewById<Button>(R.id.backBtn)
-        backBtn.setOnClickListener {
-            finish()
         }
     }
 }
