@@ -428,7 +428,7 @@ class Chat : AppCompatActivity() {
 
     // 클래스 레벨에서 접근 가능한 객체 멤버 선언
     companion object {
-        private const val MY_SECRET_KEY = ""
+        private const val MY_SECRET_KEY = BuildConfig.API_KEY
         var recipeString: String? = null
     }
 }
