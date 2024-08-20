@@ -409,6 +409,17 @@ class Chat : AppCompatActivity() {
                     val receivedData = String(buffer, 0, bytesRead)
                     Log.d("Bluetooth", "Data received: $receivedData")
 
+                    // 잔량 확인 후 부족하면 칵테일 제조 중단
+                    val receivedDataList = processData(receivedData)
+                    val recipeDataList = processData(data)
+
+                    if (!validateData(receivedDataList, recipeDataList)) {
+                        runOnUiThread {
+                            Toast.makeText(this@Chat, "잔량이 부족합니다!", Toast.LENGTH_SHORT).show()
+                        }
+                        return@Thread
+                    }
+
                     runOnUiThread {
                         Toast.makeText(applicationContext, "Data received: $receivedData", Toast.LENGTH_SHORT).show()
                     }
@@ -430,5 +441,19 @@ class Chat : AppCompatActivity() {
     companion object {
         private const val MY_SECRET_KEY = BuildConfig.API_KEY
         var recipeString: String? = null
+    }
+
+    private fun validateData(receivedData: List<Int>, recipeData: List<Int>): Boolean {
+        if (receivedData.size != recipeData.size) return false
+        for (i in receivedData.indices) {
+            if (receivedData[i] - recipeData[i] <= 2 && recipeData[i]>0) {
+                return false
+            }
+        }
+        return true
+    }
+
+    private fun processData(data: String): List<Int> {
+        return data.split("\n").mapNotNull { it.toIntOrNull() }
     }
 }
