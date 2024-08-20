@@ -42,17 +42,17 @@ class Chat : AppCompatActivity() {
     private var tvWelcome: TextView? = null
     private var messageEdit: EditText? = null
     private var sendBtn: Button? = null
+
     private var messageList: MutableList<Message>? = null
     private var messageAdapter: MessageAdapter? = null
+
     private val REQUEST_ENABLE_BT = 1
     private val BLUETOOTH_PERMISSION_REQUEST_CODE = 100
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private var isCommunicating = false
+
     private val handler = Handler(Looper.getMainLooper())
-    private var dotsRunnable: Runnable? = null
-    private var dots = ""
-    private var recommendReason: String? = null
-    private var currentCharIndex = 0
+    private lateinit var animationManager: ChatAnimationManager
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
@@ -67,6 +67,8 @@ class Chat : AppCompatActivity() {
         messageList = ArrayList()
         messageAdapter = MessageAdapter(messageList!!, this)
         recyclerView!!.setAdapter(messageAdapter)
+
+        animationManager = ChatAnimationManager(handler, recyclerView!!, messageList!!, messageAdapter!!)
 
         // 블루투스 권한 요청
         if (ContextCompat.checkSelfPermission(
@@ -97,9 +99,7 @@ class Chat : AppCompatActivity() {
             }
             return@setOnEditorActionListener false
         }
-
     }
-
 
 
     /**
@@ -114,7 +114,7 @@ class Chat : AppCompatActivity() {
             tvWelcome!!.visibility = View.GONE
         } else {
             addToChat(question, Message.SENT_BY_ME, false)
-            startDotsAnimation() // 메시지를 보낼 때 애니메이션 시작
+            animationManager.startDotsAnimation() // 애니메이션 매니저를 통해 시작
             CoroutineScope(Dispatchers.Main).launch {
                 callAPI(question)
             }
@@ -135,80 +135,12 @@ class Chat : AppCompatActivity() {
 
     // 응답 메시지를 추가하는 함수
     private fun addResponse(response: String?, hasButton: Boolean = false) {
-        stopDotsAnimation() // 응답을 추가할 때 기존 애니메이션 중지
+        animationManager.stopDotsAnimation() // 애니메이션 매니저를 통해 중지
         if (messageList!!.isNotEmpty() && messageList!!.last().sentBy == Message.SENT_BY_BOT) {
             messageList!!.removeAt(messageList!!.size - 1)
         }
-        recommendReason = response
-        addToChat("", Message.SENT_BY_BOT, hasButton) // 빈 문자열로 새로운 메시지 추가
-        startTextAnimation() // 새로운 애니메이션 시작
-    }
-
-    // 애니메이션 시작 함수
-    private fun startDotsAnimation() {
-        dots = ""
-        dotsRunnable = object : Runnable {
-            override fun run() {
-                dots += "."
-                if (dots.length > 3) dots = ""
-                updateDotsMessage()
-                handler.postDelayed(this, 500)
-            }
-        }
-        handler.post(dotsRunnable!!)
-    }
-
-    // 애니메이션 중지 함수
-    private fun stopDotsAnimation() {
-        handler.removeCallbacks(dotsRunnable!!)
-        dotsRunnable = null
-    }
-
-    // 애니메이션 메시지 업데이트 함수
-    private fun updateDotsMessage() {
-        if (messageList!!.isNotEmpty() && messageList!!.last().sentBy == Message.SENT_BY_BOT) {
-            messageList!!.last().message = dots
-            messageAdapter!!.notifyItemChanged(messageList!!.size - 1, "payload")
-            recyclerView!!.scrollToPosition(messageAdapter!!.itemCount - 1)
-        }
-    }
-
-    private fun startTextAnimation() {
-        currentCharIndex = 0
-        dotsRunnable = object : Runnable {
-            override fun run() {
-                if (recommendReason != null && currentCharIndex < recommendReason!!.length) {
-                    updateTextMessage(recommendReason!![currentCharIndex].toString())
-                    currentCharIndex++
-                    handler.postDelayed(this, 50)
-                } else {
-                    stopTextAnimation()
-                }
-            }
-        }
-        handler.post(dotsRunnable!!)
-    }
-
-    // 애니메이션 중지 함수
-    private fun stopTextAnimation() {
-        handler.removeCallbacks(dotsRunnable!!)
-        dotsRunnable = null
-    }
-
-    // 애니메이션 메시지 업데이트 함수
-    private fun updateTextMessage(char: String) {
-        if (messageList!!.isNotEmpty() && messageList!!.last().sentBy == Message.SENT_BY_BOT) {
-            messageList!!.last().message += char
-            messageAdapter!!.notifyItemChanged(messageList!!.size - 1)
-            recyclerView!!.post {
-                val lastItemPosition = messageAdapter!!.itemCount - 1
-                val lastVisibleItemPosition = (recyclerView!!.layoutManager as LinearLayoutManager).findLastVisibleItemPosition()
-
-                if (lastItemPosition == lastVisibleItemPosition) {
-                    recyclerView!!.scrollToPosition(lastItemPosition)
-                }
-            }
-        }
+        addToChat("", Message.SENT_BY_BOT, hasButton)
+        animationManager.startTextAnimation(response) // 애니메이션 매니저를 통해 텍스트 애니메이션 시작
     }
 
 
