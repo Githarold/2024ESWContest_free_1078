@@ -50,7 +50,7 @@ void loop() {
         
         // 엔드스탑이 현재 눌려 있지 않으면 waitForEndStop()을 호출
         if (digitalRead(endStopPin) == LOW) {  // 엔드스탑이 눌렸다면
-        }else{
+        }else{//엔드스탑이 안 눌렸다면 초기위치 설정하기
           waitForEndStop();
           }
         
