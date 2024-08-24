@@ -13,7 +13,7 @@ int dispenser_push_list[MAX_SIZE];   // 디스펜서 푸시 명령 리스트
 int listSize = 0;  // 현재 리스트에 저장된 명령의 개수
 
 int dc_motor_state = 0;  // DC 모터의 상태를 저장하는 변수 (0: 정지, 1: 동작)
-
+int endStopPin = 12;  // 엔드스탑 스위치가 연결된 핀
 // 시리얼 통신, 모터 핀 설정 등 초기화 작업을 수행하는 함수
 void setup() {
 
@@ -31,6 +31,8 @@ void setup() {
     pinMode(IN7, OUTPUT);
     pinMode(IN8, OUTPUT);
 
+    
+    pinMode(endStopPin, INPUT);
     // 서보 모터 핀 설정
     myservo.attach(11);  
 }
@@ -38,13 +40,19 @@ void setup() {
 // 시리얼 데이터를 확인하고, 파싱하여 명령을 실행하는 메인함수
 void loop() {
 
+    init_servo();
+
     // 시리얼 데이터를 확인하고 처리
     if (Serial.available() > 0) {
         String data = Serial.readStringUntil('\n');
         
         parseData(data);  // 입력된 데이터를 파싱하여 명령 리스트에 저장
-
-        waitForEndStop();  // 엔드스탑 신호를 대기
+        
+        // 엔드스탑이 현재 눌려 있지 않으면 waitForEndStop()을 호출
+        if (digitalRead(endStopPin) == LOW) {  // 엔드스탑이 눌렸다면
+        }else{
+          waitForEndStop();
+          }
         
         // 리스트에 저장된 명령을 순차적으로 실행
         for (int i = 0; i < listSize; i++) {
@@ -65,6 +73,7 @@ void loop() {
 
         Serial.println("8");  // 완료 신호를 전송
     }
+    
 }
 
  // 입력된 문자열 데이터를 분석하여 명령 리스트를 구성하는 함수

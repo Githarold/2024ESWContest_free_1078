@@ -4,11 +4,11 @@
 
 // 모터 A와 B의 핀 설정 (역방향 구동을 위해 리스트로 설정)
 const int ENA[2] = {2, 2}; 
-int IN1[2] = {3, 6};       
-int IN2[2] = {4, 7};       
+int IN1[2] = {6, 3};       
+int IN2[2] = {7, 4};       
 const int ENB[2] = {5, 5}; 
-int IN3[2] = {6, 3};       
-int IN4[2] = {7, 4};       
+int IN3[2] = {3, 6};       
+int IN4[2] = {4, 7};       
 
 // 소프트 스타트/스탑에 사용될 딜레이 값 배열
 // 25개의 스텝에 대한 딜레이 값은 다음 식을 기반으로 계산됨: y = 49 * e^(-0.19 * x) + 4
@@ -173,10 +173,7 @@ int lastEndStopState = 0;   // 이전 엔드스탑 상태
 unsigned long lastDebounceTime = 0;  // 디바운싱 체크를 위한 마지막 시간
 unsigned long debounceDelay = 50;    // 디바운싱 지연 시간 (밀리초)
 
-// 엔드스탑 핀을 입력 모드로 설정
-void setupEndStop() {
-    pinMode(endStopPin, INPUT);  
-}
+
 
 // 엔드스탑 스위치가 눌렸는지 확인하고, 디바운싱 처리
 bool isEndStopTriggered() {
@@ -203,25 +200,41 @@ bool isEndStopTriggered() {
     return false;  // 엔드스탑이 트리거되지 않음
 }
 
-//엔드스탑 스위치를 누르기 위해 느린 속도로 스텝모터를 작동시키는 함수
-// 하프 스텝 모드로 모터를 동작시켜 발열을 줄임
-void halfstep_thermo(int stepDelay) {
-    for (int i = 0; i < 8; i++) {
-        digitalWrite(IN1[1], i == 0 || i == 1 || i == 2 || i == 3 ? HIGH : LOW);
-        digitalWrite(IN2[1], i == 5 || i == 6 || i == 7 || i == 0 ? HIGH : LOW);
-        digitalWrite(IN3[1], i == 0 || i == 7 || i == 6 || i == 4 ? HIGH : LOW);
-        digitalWrite(IN4[1], i == 3 || i == 4 || i == 5 || i == 2 ? HIGH : LOW);
+void fullstep(int stepDelay) {
+    for (int i = 0; i < 4; i++) {
+        switch (i) {
+            case 0:
+                digitalWrite(IN1[1], HIGH);
+                digitalWrite(IN2[1], LOW);
+                digitalWrite(IN3[1], HIGH);
+                digitalWrite(IN4[1], LOW);
+                break;
+            case 1:
+                digitalWrite(IN1[1], HIGH);
+                digitalWrite(IN2[1], LOW);
+                digitalWrite(IN3[1], LOW);
+                digitalWrite(IN4[1], HIGH);
+                break;
+            case 2:
+                digitalWrite(IN1[1], LOW);
+                digitalWrite(IN2[1], HIGH);
+                digitalWrite(IN3[1], LOW);
+                digitalWrite(IN4[1], HIGH);
+                break;
+            case 3:
+                digitalWrite(IN1[1], LOW);
+                digitalWrite(IN2[1], HIGH);
+                digitalWrite(IN3[1], HIGH);
+                digitalWrite(IN4[1], LOW);
+                break;
+        }
         
         delay(stepDelay);
         
-        // 전류 감소를 위한 짧은 딜레이
-        digitalWrite(IN1[1], LOW);
-        digitalWrite(IN2[1], LOW);
-        digitalWrite(IN3[1], LOW);
-        digitalWrite(IN4[1], LOW);
-        delay(stepDelay / 2);
     }
 }
+
+
 
 // 엔드스탑이 눌릴 때까지 모터를 움직임
 void waitForEndStop() {
@@ -230,7 +243,7 @@ void waitForEndStop() {
 
     // 엔드스탑이 눌릴 때까지 계속 스텝 수행
     while (!isEndStopTriggered()) {
-        halfstep_thermo(30);
+        fullstep(30);
     }
 
     disableMotor(0);  // 모터 정지

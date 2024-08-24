@@ -47,6 +47,8 @@ void disk_rotate(int disk_step);
 
 
 ////////////////////////////
+
+void fullstep(int stepDelay);
 // 엔드스탑 핀 설정
 void setupEndStop();
 
@@ -55,7 +57,6 @@ bool isEndStopTriggered();
 
 // 엔드스탑이 감지될 때까지 대기하며 작업 수행
 void waitForEndStop();
-
 
 
 
