@@ -5,8 +5,15 @@
 #include "motor_step.h"  
 #include "motor_dc.h"    
 #include "motor_servo.h" 
+#include <Adafruit_NeoPixel.h>
+#include "neopixel.h"
 
 #define MAX_SIZE 10  // 명령 리스트의 최대 크기를 10으로 설정
+
+#define NEO_PIN        22
+#define NUMPIXELS  24
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMPIXELS, NEO_PIN, NEO_GRB + NEO_KHZ800);
 
 int disk_rotate_list[MAX_SIZE];      // 디스크 회전 명령 리스트
 int dispenser_push_list[MAX_SIZE];   // 디스펜서 푸시 명령 리스트
@@ -35,6 +42,9 @@ void setup() {
     pinMode(endStopPin, INPUT);
     // 서보 모터 핀 설정
     myservo.attach(11);  
+
+    strip.begin();
+    strip.show(); // 모든 LED 끄기
 }
 
 // 시리얼 데이터를 확인하고, 파싱하여 명령을 실행하는 메인함수
@@ -50,9 +60,23 @@ void loop() {
         
         // 엔드스탑이 현재 눌려 있지 않으면 waitForEndStop()을 호출
         if (digitalRead(endStopPin) == LOW) {  // 엔드스탑이 눌렸다면
-        }else{//엔드스탑이 안 눌렸다면 초기위치 설정하기
-          waitForEndStop();
+        }else{
+          red(strip);
+          digitalWrite(ENA[1], HIGH);
+          digitalWrite(ENB[1], HIGH);
+      
+          // 엔드스탑이 눌릴 때까지 계속 스텝 수행
+          while (digitalRead(endStopPin) != LOW) {
+              fullstep(15);
           }
+
+            disableMotor(0);  // 모터 정지
+          }
+        green(strip);
+
+         // 리스트에 저장된 명령을 순차적으로 실행
+        int totalSteps = sumOfDispenserPushList();  // 전체 단계 수 (dispenser_push_list의 길이)
+        int stepCounter = 0;  // 네오픽셀 제어를 위한 단계 카운터
         
         // 리스트에 저장된 명령을 순차적으로 실행
         for (int i = 0; i < listSize; i++) {
@@ -61,17 +85,21 @@ void loop() {
            
             for (int j = 0; j < dispenser_push_list[i]; j++) {
                 dispenser_activate();  // 디스펜서 푸시
-                delay(1000);  // 1초 대기
+                delay(500);  // 1초 대기
+                stepCounter++;  // 네오픽셀 제어를 위한 단계 증가
+                white(strip, stepCounter, totalSteps);  // 단계에 따라 네오픽셀 켜기
             }
         }
 
         // DC 모터 상태가 1이면 모터를 동작시킴
         if (dc_motor_state == 1) {
+          purple(strip);
             stir(127, 500, 3);  // 음료 혼합
-            delay(1000);  // 1초 대기
+            delay(500);  // 1초 대기
         }
 
         Serial.println("8");  // 완료 신호를 전송
+        blue(strip);
     }
     
 }
@@ -117,4 +145,13 @@ void parseData(String data) {
         endPos = dispenserData.indexOf(',', startPos);
     }
     dispenser_push_list[dispenserCount] = dispenserData.substring(startPos).toInt();  
+}
+
+
+int sumOfDispenserPushList() {
+    int sum = 0;
+    for (int i = 0; i < listSize; i++) {
+        sum += dispenser_push_list[i];
+    }
+    return sum;
 }

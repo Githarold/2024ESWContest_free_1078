@@ -171,7 +171,7 @@ const int endStopPin = 12;  // 엔드스탑 스위치가 연결된 핀
 int endStopState = 0;       // 현재 엔드스탑 상태
 int lastEndStopState = 0;   // 이전 엔드스탑 상태
 unsigned long lastDebounceTime = 0;  // 디바운싱 체크를 위한 마지막 시간
-unsigned long debounceDelay = 50;    // 디바운싱 지연 시간 (밀리초)
+unsigned long debounceDelay = 5;    // 디바운싱 지연 시간 (밀리초)
 
 
 
@@ -234,6 +234,23 @@ void fullstep(int stepDelay) {
     }
 }
 
+void halfstep_thermo(int stepDelay) {
+    for (int i = 0; i < 8; i++) {
+        digitalWrite(IN1[1], i == 0 || i == 1 || i == 2 || i == 3 ? HIGH : LOW);
+        digitalWrite(IN2[1], i == 5 || i == 6 || i == 7 || i == 0 ? HIGH : LOW);
+        digitalWrite(IN3[1], i == 0 || i == 7 || i == 6 || i == 4 ? HIGH : LOW);
+        digitalWrite(IN4[1], i == 3 || i == 4 || i == 5 || i == 2 ? HIGH : LOW);
+        
+        delay(stepDelay);
+        
+//        // 전류 감소를 위한 짧은 딜레이
+//        digitalWrite(IN1[1], LOW);
+//        digitalWrite(IN2[1], LOW);
+//        digitalWrite(IN3[1], LOW);
+//        digitalWrite(IN4[1], LOW);
+//        delay(stepDelay / 2);
+    }
+}
 
 
 // 엔드스탑이 눌릴 때까지 모터를 움직임
@@ -243,7 +260,7 @@ void waitForEndStop() {
 
     // 엔드스탑이 눌릴 때까지 계속 스텝 수행
     while (!isEndStopTriggered()) {
-        fullstep(30);
+        halfstep_thermo(45);
     }
 
     disableMotor(0);  // 모터 정지
