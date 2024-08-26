@@ -16,8 +16,12 @@ void servo_down() {
 }
 
 void dispenser_activate() {
+  myservo.attach(11);
+  delay(100);
   servo_up();   // 서보를 올림
   servo_down(); // 서보를 내림
+  myservo.detach();
+  delay(300);
 }
 
 void init_servo() {

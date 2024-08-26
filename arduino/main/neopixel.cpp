@@ -48,10 +48,12 @@ void green(Adafruit_NeoPixel &strip) {
 void white(Adafruit_NeoPixel &strip, int step, int totalSteps) {
     int pixelsToLight = (NUMPIXELS * step) / totalSteps;  // 켤 LED의 개수 계산
     for (int i = 0; i < pixelsToLight; i++) {
-        strip.setPixelColor(i, strip.Color(150, 150, 150)); // 흰색으로 설정
+        int reverseIndex = NUMPIXELS - 1 - i;  // 반대 방향으로 인덱스 계산
+        strip.setPixelColor(reverseIndex, strip.Color(150, 150, 150)); // 흰색으로 설정
     }
     strip.show(); // 모든 LED를 한 번에 켬
 }
+
 
 
 // LED 끄는 함수

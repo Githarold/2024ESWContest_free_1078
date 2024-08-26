@@ -51,7 +51,8 @@ void setup() {
 void loop() {
 
     init_servo();
-
+    myservo.detach();
+    delay(100);
     // 시리얼 데이터를 확인하고 처리
     if (Serial.available() > 0) {
         String data = Serial.readStringUntil('\n');
@@ -85,9 +86,11 @@ void loop() {
            
             for (int j = 0; j < dispenser_push_list[i]; j++) {
                 dispenser_activate();  // 디스펜서 푸시
-                delay(500);  // 1초 대기
+                delay(100);
                 stepCounter++;  // 네오픽셀 제어를 위한 단계 증가
+                Serial.println(stepCounter);
                 white(strip, stepCounter, totalSteps);  // 단계에 따라 네오픽셀 켜기
+                delay(300);
             }
         }
 
@@ -100,6 +103,9 @@ void loop() {
 
         Serial.println("8");  // 완료 신호를 전송
         blue(strip);
+        turnOffAllPixels(strip);
+        stepCounter = 0;
+        totalSteps = 0;
     }
     
 }
