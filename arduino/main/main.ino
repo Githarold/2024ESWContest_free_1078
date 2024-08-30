@@ -41,10 +41,16 @@ void setup() {
     
     pinMode(endStopPin, INPUT);
     // 서보 모터 핀 설정
-    myservo.attach(11);  
-
+      
+    
     strip.begin();
     strip.show(); // 모든 LED 끄기
+    init_servo();
+    myservo.detach();
+
+    pinMode(11, OUTPUT);  // 서보 모터 핀을 OUTPUT으로 설정
+    digitalWrite(11, LOW);  // 신호 핀을 LOW로 설정하여 잔류 전압 제거
+    delay(300);
 }
 
 // 시리얼 데이터를 확인하고, 파싱하여 명령을 실행하는 메인함수
@@ -52,29 +58,19 @@ void loop() {
 
     init_servo();
     myservo.detach();
-    delay(100);
+    delay(300);
     // 시리얼 데이터를 확인하고 처리
     if (Serial.available() > 0) {
         String data = Serial.readStringUntil('\n');
         
         parseData(data);  // 입력된 데이터를 파싱하여 명령 리스트에 저장
+        init_servo();
         
-        // 엔드스탑이 현재 눌려 있지 않으면 waitForEndStop()을 호출
-        if (digitalRead(endStopPin) == LOW) {  // 엔드스탑이 눌렸다면
-        }else{
-          red(strip);
-          digitalWrite(ENA[1], HIGH);
-          digitalWrite(ENB[1], HIGH);
-      
-          // 엔드스탑이 눌릴 때까지 계속 스텝 수행
-          while (digitalRead(endStopPin) != LOW) {
-              fullstep(15);
-          }
-
-            disableMotor(0);  // 모터 정지
-          }
+        // 컵의 초기위치 설정을 위해 waitForEndStop()을 호출
+        waitForEndStop();
+        init_servo();
         green(strip);
-
+        init_servo();
          // 리스트에 저장된 명령을 순차적으로 실행
         int totalSteps = sumOfDispenserPushList();  // 전체 단계 수 (dispenser_push_list의 길이)
         int stepCounter = 0;  // 네오픽셀 제어를 위한 단계 카운터
@@ -88,7 +84,6 @@ void loop() {
                 dispenser_activate();  // 디스펜서 푸시
                 delay(100);
                 stepCounter++;  // 네오픽셀 제어를 위한 단계 증가
-                Serial.println(stepCounter);
                 white(strip, stepCounter, totalSteps);  // 단계에 따라 네오픽셀 켜기
                 delay(300);
             }
@@ -101,9 +96,10 @@ void loop() {
             delay(500);  // 1초 대기
         }
 
-        Serial.println("8");  // 완료 신호를 전송
+        Serial.println("9");  // 완료 신호를 전송
         blue(strip);
         turnOffAllPixels(strip);
+        init_servo();
         stepCounter = 0;
         totalSteps = 0;
     }
@@ -116,6 +112,12 @@ void parseData(String data) {
     // 라즈베리파이로부터 받은 문자열의 첫 번째 부분을 잘라서 정수로 변환하여 DC 모터 상태로 저장
     int firstComma = data.indexOf(',');
     dc_motor_state = data.substring(0, firstComma).toInt();  
+
+
+    // 리스트 초기화
+    listSize = 0;
+    memset(disk_rotate_list, 0, sizeof(disk_rotate_list));
+    memset(dispenser_push_list, 0, sizeof(dispenser_push_list));
     
     // 각 대괄호의 위치를 찾음 
     int firstBracket = data.indexOf('[', firstComma);  
@@ -160,4 +162,22 @@ int sumOfDispenserPushList() {
         sum += dispenser_push_list[i];
     }
     return sum;
+}
+
+void waitForEndStop() {
+    if (digitalRead(endStopPin) == LOW) {
+        // 엔드스탑이 이미 눌려 있으면 아무 작업도 하지 않음
+        return;
+    } else {
+        red(strip);
+        digitalWrite(ENA[1], HIGH);
+        digitalWrite(ENB[1], HIGH);
+
+        // 엔드스탑이 눌릴 때까지 계속 스텝 수행
+        while (digitalRead(endStopPin) != LOW) {
+            fullstep(15);
+        }
+
+        disableMotor(0);  // 모터 정지
+    }
 }

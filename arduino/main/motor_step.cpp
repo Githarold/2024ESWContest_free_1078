@@ -251,17 +251,3 @@ void halfstep_thermo(int stepDelay) {
 //        delay(stepDelay / 2);
     }
 }
-
-
-// 엔드스탑이 눌릴 때까지 모터를 움직임
-void waitForEndStop() {
-    digitalWrite(ENA[1], HIGH);
-    digitalWrite(ENB[1], HIGH);
-
-    // 엔드스탑이 눌릴 때까지 계속 스텝 수행
-    while (!isEndStopTriggered()) {
-        halfstep_thermo(45);
-    }
-
-    disableMotor(0);  // 모터 정지
-}

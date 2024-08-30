@@ -25,6 +25,10 @@ void dispenser_activate() {
 }
 
 void init_servo() {
+  myservo.attach(11);
+  delay(100);
   myservo.write(50);  // 서보를 60도로 회전
   delay(1000);        // 7초 대기
+  myservo.detach();
+  delay(300);
 }

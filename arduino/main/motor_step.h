@@ -55,8 +55,7 @@ void setupEndStop();
 // 엔드스탑이 트리거되었는지 확인
 bool isEndStopTriggered();
 
-// 엔드스탑이 감지될 때까지 대기하며 작업 수행
-void waitForEndStop();
+
 
 void halfstep_thermo(int stepDelay);
 
