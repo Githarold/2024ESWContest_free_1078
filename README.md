@@ -1,6 +1,3 @@
-# 2024ESWContest_free_1078
-BartendAirtist: An innovative project developed for the 22nd The World Embedded Software Contest (Free Topic Category).
-
 # 🍹 BartendAiRtist
 
 ![AI](https://github.com/Githarold/BartendAiRtist/assets/101968287/77cd479b-e9c5-4142-9f24-73aca56d9382)
