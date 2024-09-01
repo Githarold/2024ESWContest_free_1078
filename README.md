@@ -19,7 +19,6 @@ BartendAiRtist에 오신 것을 환영합니다, 당신의 취향과 기분에 �
 - [App Menu](#-app-menu)
 - [Getting Started](#-getting-started)
 - [Demo Results](#-demo-results)
-- [Contributing](#-contributing)
 - [Contact Us](#-contact-us)
 
 ## 🌟 Features
