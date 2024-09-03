@@ -1,101 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".select"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:id="@+id/main"
+    android:background="#3369FE">
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/backBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="뒤로가기"
-        android:background="@drawable/btn_background"
-        android:layout_margin="5dp"
-        android:textColor="#FFFFFF"/>
-
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:weightSum="10">
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/backBtn"
+            android:layout_width="40dp"
+            android:layout_height="35dp"
+            android:src="@drawable/back_btn"
+            android:contentDescription="뒤로가기"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"/>
+
+        <TextView
+            android:id="@+id/cocktail_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Blueberry Power"
+            android:textSize="40sp"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:layout_below="@id/backBtn"
+            android:layout_alignStart="@id/backBtn"
+            android:layout_marginTop="20dp"/>
+
+        <TextView
+            android:id="@+id/attribute"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Attribute text"
+            android:textSize="14sp"
+            android:fontFamily="sans-serif-condensed"
+            android:textColor="@android:color/white"
+            android:layout_below="@id/cocktail_name"
+            android:layout_alignStart="@id/cocktail_name"
+            android:layout_marginTop="20dp"/>
 
         <ImageView
             android:id="@+id/cocktail_img"
-            android:layout_marginTop="10dp"
+            android:layout_width="180dp"
+            android:layout_height="180dp"
+            android:src="@drawable/seabreeze"
+            android:contentDescription="칵테일 이미지"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="130dp"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/rounded_white_background"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/textView"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="4"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"/>
+            android:layout_height="wrap_content"
+            android:text="A new crop of energizing sips are sparkling waters with natural fresh blueberries."
+            android:textSize="18sp"
+            android:textColor="@android:color/black"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="8dp"/>
 
-        <View
+        <TextView
+            android:id="@+id/prepare_ice_text"
             android:layout_width="match_parent"
-            android:layout_height="5dp"
-            android:layout_marginTop="10dp"
-            android:background="#D4D4D3"/>
+            android:layout_height="wrap_content"
+            android:text="얼음을 준비해주세요!"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#FF0000"
+            android:layout_below="@id/textView"
+            android:layout_marginTop="16dp"/>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="6"
-            android:orientation="vertical">
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="70dp">
-
-                <TextView
-                    android:id="@+id/cocktail_name"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_margin="10dp"
-                    android:text="text"
-                    android:textSize="30dp"
-                    android:layout_alignParentLeft="true"
-                    android:gravity="center"
-                    android:textStyle="bold"/>
-
-                <androidx.appcompat.widget.AppCompatButton
-                    android:id="@+id/select_cocktail"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:text="선택"
-                    android:layout_alignParentRight="true"
-                    android:layout_margin="10dp"
-                    android:textSize="20dp"
-                    android:gravity="center"
-                    android:background="@drawable/edit_background"/>
-            </RelativeLayout>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="얼음을 준비해주세요!"
-                android:textColor="#FF0000"
-                android:textStyle="bold"
-                android:textSize="20dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginStart="10dp"/>
-
-            <ScrollView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_margin="10dp">
-
-                <TextView
-                    android:id="@+id/textView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="TextView"
-                    android:textSize="20dp"/>
-            </ScrollView>
-
-        </LinearLayout>
-
-    </LinearLayout>
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/select_cocktail"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:text="Select!"
+            android:textSize="20sp"
+            android:background="@drawable/select_button_background"
+            android:textColor="@android:color/white"
+            android:padding="6dp"
+            android:fontFamily="sans-serif-condensed"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginTop="16dp"
+            android:textAllCaps="false"/>
+    </RelativeLayout>
 
 </LinearLayout>

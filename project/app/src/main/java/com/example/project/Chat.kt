@@ -22,7 +22,9 @@ import androidx.recyclerview.widget.RecyclerView
 import java.io.IOException
 import android.view.inputmethod.EditorInfo
 import android.view.KeyEvent
+import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.aallam.openai.api.BetaOpenAI
@@ -39,7 +41,6 @@ import java.io.OutputStream
 
 class Chat : AppCompatActivity() {
     private var recyclerView: RecyclerView? = null
-    private var tvWelcome: TextView? = null
     private var messageEdit: EditText? = null
     private var sendBtn: Button? = null
 
@@ -55,9 +56,9 @@ class Chat : AppCompatActivity() {
     private lateinit var animationManager: ChatAnimationManager
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContentView(R.layout.activity_chat)
         recyclerView = findViewById(R.id.chat_recyclerView)
-        tvWelcome = findViewById(R.id.tv_welcome)
         messageEdit = findViewById(R.id.message_edit)
         sendBtn = findViewById(R.id.send_btn)
         recyclerView!!.setHasFixedSize(true)
@@ -69,6 +70,11 @@ class Chat : AppCompatActivity() {
         recyclerView!!.setAdapter(messageAdapter)
 
         animationManager = ChatAnimationManager(handler, recyclerView!!, messageList!!, messageAdapter!!)
+
+        val backBtn = findViewById<ImageView>(R.id.back_btn)
+        backBtn.setOnClickListener {
+            finish()
+        }
 
         // 블루투스 권한 요청
         if (ContextCompat.checkSelfPermission(
@@ -111,7 +117,6 @@ class Chat : AppCompatActivity() {
         val question = messageEdit!!.getText().toString().trim { it <= ' ' }
         if (question.isEmpty()) {
             addToChat("아무것도 입력하지 않으셨네요. 어떤 칵테일을 드시고 싶은가요?", Message.SENT_BY_BOT, false)
-            tvWelcome!!.visibility = View.GONE
         } else {
             addToChat(question, Message.SENT_BY_ME, false)
             animationManager.startDotsAnimation() // 애니메이션 매니저를 통해 시작
@@ -119,7 +124,6 @@ class Chat : AppCompatActivity() {
                 callAPI(question)
             }
             messageEdit!!.text.clear()
-            tvWelcome!!.visibility = View.GONE
         }
     }
 

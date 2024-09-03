@@ -60,6 +60,7 @@ class CocktaillistAdapter(
     }
 }
 
+
 interface OnCocktailClickListener {
     fun onCocktailClick(name: String)
 }

@@ -4,61 +4,95 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".Chat">
+
+    <LinearLayout
+        android:id="@+id/top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:layout_alignParentTop="true">
+
+        <ImageView
+            android:id="@+id/back_btn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/back_btn"
+            android:contentDescription="뒤로가기"
+            android:layout_gravity="center_vertical"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center"
+            android:layout_marginStart="16dp">
+
+            <ImageView
+                android:id="@+id/bot_icon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/chatbot_icon"
+                android:contentDescription="채팅봇"
+                android:layout_gravity="center_vertical"/>
+
+            <TextView
+                android:id="@+id/bot_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Smart Bartender"
+                android:textSize="20sp"
+                android:textColor="@android:color/holo_blue_dark"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="8dp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@id/top_bar"
+        android:background="#535353" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chat_recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
-        android:layout_above="@id/input_layout" />
+        android:layout_below="@id/top_bar"
+        android:layout_above="@id/input_layout"
+        android:clipToPadding="false"/>
 
-    <TextView
-        android:id="@+id/tv_welcome"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="Welcome"
-        android:gravity="center"
-        android:textSize="28sp" />
-
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/input_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="10dp"
-        android:orientation="horizontal">
+        android:padding="10dp"
+        android:layout_margin="10dp"
+        android:paddingBottom="20dp"
+        android:background="@drawable/edit_background">
 
-        <!-- 입력 창 -->
         <EditText
             android:id="@+id/message_edit"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginEnd="5dp"
-            android:layout_marginBottom="5dp"
-            android:background="@drawable/edit_background"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_toStartOf="@id/send_btn"
+            android:layout_alignParentStart="true"
+            android:background="@android:color/transparent"
             android:hint="메시지를 입력하세요"
-            android:paddingStart="10dp"
-            android:paddingTop="5dp"
-            android:paddingEnd="5dp"
-            android:paddingBottom="5dp" />
+            android:padding="10dp"
+            android:textSize="16sp"/>
 
-        <!-- 전송 버튼 -->
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/send_btn"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="0.2"
-            android:layout_marginStart="0dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginBottom="5dp"
-            android:background="@drawable/btn_background"
-            android:text="전송"
-            android:textColor="#FFFFFF" />
-    </LinearLayout>
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:background="@drawable/send_btn"
+            android:text=""
+            android:textColor="#FFFFFF"
+            android:layout_marginEnd="5dp"/>
+    </RelativeLayout>
 </RelativeLayout>

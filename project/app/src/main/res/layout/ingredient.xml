@@ -1,49 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:background="@drawable/item_background"
+    android:padding="16dp"
+    android:layout_marginBottom="16dp">
+
+    <ImageView
+        android:id="@+id/ingredientImage"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:background="@drawable/ingredient_background"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
     <TextView
         android:id="@+id/ingredientName"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="술 재료 이름"
-        android:textSize="20dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_margin="10dp"/>
+        android:textColor="#000000"
+        android:textSize="16sp"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@id/ingredientImage"
+        app:layout_constraintEnd_toStartOf="@id/decrementButton"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"/>
 
-        <LinearLayout
-            android:id="@+id/many_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:weightSum="3">
-            <Button
-                android:id="@+id/minus"
-                android:layout_width="0dp"
-                android:layout_height="50dp"
-                android:layout_weight="1"
-                android:text="-"
-                android:textSize="18sp"
-                android:textColor="#FFFFFF"/>
-            <TextView
-                android:id="@+id/how_many"
-                android:layout_width="0dp"
-                android:layout_height="50dp"
-                android:layout_weight="1"
-                android:background="@drawable/btn_background"
-                android:text="용량"
-                android:textSize="18sp"
-                android:textColor="#FFFFFF"
-                android:gravity="center"/>
-            <Button
-                android:id="@+id/plus"
-                android:layout_width="0dp"
-                android:layout_height="50dp"
-                android:layout_weight="1"
-                android:text="+"
-                android:textSize="18sp"
-                android:textColor="#FFFFFF"/>
-        </LinearLayout>
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/decrementButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:text="-"
+        android:textSize="24sp"
+        android:textColor="#3369FE"
+        android:background="@drawable/minus_btn"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="0dp"
+        android:gravity="center"
+        app:layout_constraintEnd_toStartOf="@id/quantityText"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginEnd="4dp"/>
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/quantityText"
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:text="0"
+        android:textColor="#000000"
+        android:textSize="18sp"
+        android:gravity="center"
+        android:layout_marginEnd="4dp"
+        app:layout_constraintEnd_toStartOf="@id/incrementButton"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/incrementButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:text="+"
+        android:textSize="24sp"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/plus_btn"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="0dp"
+        android:gravity="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

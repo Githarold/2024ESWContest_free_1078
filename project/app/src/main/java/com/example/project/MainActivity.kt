@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -49,15 +50,15 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        findViewById<Button>(R.id.chooseBtn).setOnClickListener {
+        findViewById<LinearLayout>(R.id.chooseLayout).setOnClickListener {
             startActivity(Intent(this, Choose::class.java))
         }
 
-        findViewById<Button>(R.id.recommendBtn).setOnClickListener {
+        findViewById<LinearLayout>(R.id.recommendLayout).setOnClickListener {
             startActivity(Intent(this, Chat::class.java))
         }
 
-        findViewById<Button>(R.id.customBtn).setOnClickListener {
+        findViewById<LinearLayout>(R.id.customLayout).setOnClickListener {
             startActivity(Intent(this, Custom::class.java))
         }
         findViewById<Button>(R.id.PairingBtn).setOnClickListener {
