@@ -10,16 +10,16 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:padding="16dp">
 
-        <androidx.appcompat.widget.AppCompatButton
+        <ImageView
             android:id="@+id/backBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="뒤로가기"
-            android:background="@drawable/btn_background"
-            android:layout_margin="5dp"
-            android:textColor="#FFFFFF"
+            android:layout_width="40dp"
+            android:layout_height="35dp"
+            android:src="@drawable/back_btn"
+            android:clickable="true"
+            android:focusable="true"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
@@ -31,8 +31,20 @@
             android:layout_margin="5dp"
             android:background="@drawable/btn_circle"
             android:text="!"
-            android:textColor="#03A9F4"
+            android:textColor="#3369FE"
             android:textSize="30dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <Button
+            android:id="@+id/selectBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="주문하기"
+            android:backgroundTint="#3369FE"
+            android:textColor="@android:color/white"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
@@ -44,14 +56,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_margin="5dp" />
+        android:layout_margin="8dp"
+        android:padding="8dp" />
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/selectBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/edit_background"
-        android:layout_gravity="bottom|end"
-        android:text="선택"
-        android:layout_margin="5dp" />
 </LinearLayout>

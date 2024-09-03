@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.ListView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -73,6 +74,11 @@ class Pairing : AppCompatActivity() {
 
         val searchBtn: Button = findViewById(R.id.searchBtn)
         val deviceListView: ListView = findViewById(R.id.deviceList)
+
+        val backBtn = findViewById<ImageView>(R.id.backBtn)
+        backBtn.setOnClickListener {
+            finish()
+        }
 
         arrayAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, deviceList)
         deviceListView.adapter = arrayAdapter
