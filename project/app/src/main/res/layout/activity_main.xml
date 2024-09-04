@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -7,51 +8,124 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/PairingBtn"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/recommendLayout"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Pairing"
+        android:orientation="vertical"
+        android:gravity="center"
+        app:layout_constraintBottom_toTopOf="@id/chooseLayout"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.8"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/rounded_button"
+        android:padding="16dp">
 
-    <Button
-        android:id="@+id/chooseBtn"
-        android:layout_width="wrap_content"
+        <ImageView
+            android:id="@+id/recommendImage"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/ic_recommend_cocktail"
+            android:layout_gravity="center"/>
+
+        <TextView
+            android:id="@+id/recommendText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="칵테일 추천받기"
+            android:textColor="#3369FE"
+            android:layout_marginTop="8dp"
+            android:gravity="center"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/chooseLayout"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="칵테일 고르기"
+        android:orientation="vertical"
+        android:gravity="center"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/recommendBtn"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <Button
-        android:id="@+id/recommendBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="칵테일 추천받기"
-        app:layout_constraintTop_toBottomOf="@id/chooseBtn"
-        app:layout_constraintBottom_toTopOf="@id/customBtn"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <Button
-        android:id="@+id/customBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="칵테일 커스텀하기"
-        app:layout_constraintTop_toBottomOf="@id/recommendBtn"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.8"
+        android:background="@drawable/rounded_button"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/chooseImage"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/ic_choose_cocktail"
+            android:layout_gravity="center"/>
+
+        <TextView
+            android:id="@+id/chooseText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="칵테일 고르기"
+            android:textColor="#3369FE"
+            android:layout_marginTop="8dp"
+            android:gravity="center"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/customLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/chooseLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.8"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/rounded_button"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/customImage"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/ic_customize_cocktail"
+            android:layout_gravity="center"/>
+
+        <TextView
+            android:id="@+id/customText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="칵테일 커스텀하기"
+            android:textColor="#3369FE"
+            android:layout_marginTop="8dp"
+            android:gravity="center"/>
+
+    </LinearLayout>
 
     <Button
         android:id="@+id/devBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="개발자 모드"
+        android:text="Dev option"
+        android:backgroundTint="#3369FE"
+        android:textColor="@android:color/white"
+        android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <Button
+        android:id="@+id/PairingBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pairing"
+        android:backgroundTint="#3369FE"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

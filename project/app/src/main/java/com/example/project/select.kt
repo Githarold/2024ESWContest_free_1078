@@ -76,6 +76,7 @@ class select : AppCompatActivity() {
         val head = jsonObject.getString("head")
         val recipe = jsonObject.getString("recipe")
         val order = jsonObject.getString("order")
+        val attribute = jsonObject.getString("attribute")
 
         val receivedData = intent.getStringExtra("RECEIVED_DATA") ?: ""
         receivedDataList = processData(receivedData)
@@ -90,6 +91,9 @@ class select : AppCompatActivity() {
 
         val cocktailTextView = findViewById<TextView>(R.id.textView)
         cocktailTextView.text = description
+
+        val attributeTextView = findViewById<TextView>(R.id.attribute)
+        attributeTextView.text = attribute
 
         val cocktailNameView = findViewById<TextView>(R.id.cocktail_name)
         cocktailNameView.text = name
@@ -117,7 +121,7 @@ class select : AppCompatActivity() {
             builder.create().show()
         }
 
-        val backBtn = findViewById<Button>(R.id.backBtn)
+        val backBtn = findViewById<ImageView>(R.id.backBtn)
         backBtn.setOnClickListener {
             finish()
         }

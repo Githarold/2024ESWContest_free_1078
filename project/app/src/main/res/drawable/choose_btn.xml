@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <corners android:radius="10dp"/>
+    <item android:state_pressed="true" android:color="#2F3A7C"/>
+    <solid android:color="#3369FE"/>
+</shape>

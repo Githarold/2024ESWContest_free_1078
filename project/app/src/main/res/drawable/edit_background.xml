@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <corners android:radius="20dp"/>
+    <solid android:color="#F6F6F6"/> <!-- 배경색 설정 -->
+    <corners android:radius="25dp"/> <!-- 모서리 둥글게 -->
     <stroke
-        android:width="4dp"
-        android:color="#03A9F4"/>
+        android:width="2dp"
+        android:color="#E0E0E0"/> <!-- 테두리 설정 -->
+    <padding
+        android:left="16dp"
+        android:right="16dp"
+        android:top="12dp"
+        android:bottom="12dp"/> <!-- 내부 패딩 설정 -->
 </shape>

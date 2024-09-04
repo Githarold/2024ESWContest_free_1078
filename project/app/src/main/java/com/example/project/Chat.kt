@@ -22,7 +22,9 @@ import androidx.recyclerview.widget.RecyclerView
 import java.io.IOException
 import android.view.inputmethod.EditorInfo
 import android.view.KeyEvent
+import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.aallam.openai.api.BetaOpenAI
@@ -39,25 +41,24 @@ import java.io.OutputStream
 
 class Chat : AppCompatActivity() {
     private var recyclerView: RecyclerView? = null
-    private var tvWelcome: TextView? = null
     private var messageEdit: EditText? = null
     private var sendBtn: Button? = null
+
     private var messageList: MutableList<Message>? = null
     private var messageAdapter: MessageAdapter? = null
+
     private val REQUEST_ENABLE_BT = 1
     private val BLUETOOTH_PERMISSION_REQUEST_CODE = 100
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private var isCommunicating = false
+
     private val handler = Handler(Looper.getMainLooper())
-    private var dotsRunnable: Runnable? = null
-    private var dots = ""
-    private var recommendReason: String? = null
-    private var currentCharIndex = 0
+    private lateinit var animationManager: ChatAnimationManager
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContentView(R.layout.activity_chat)
         recyclerView = findViewById(R.id.chat_recyclerView)
-        tvWelcome = findViewById(R.id.tv_welcome)
         messageEdit = findViewById(R.id.message_edit)
         sendBtn = findViewById(R.id.send_btn)
         recyclerView!!.setHasFixedSize(true)
@@ -67,6 +68,13 @@ class Chat : AppCompatActivity() {
         messageList = ArrayList()
         messageAdapter = MessageAdapter(messageList!!, this)
         recyclerView!!.setAdapter(messageAdapter)
+
+        animationManager = ChatAnimationManager(handler, recyclerView!!, messageList!!, messageAdapter!!)
+
+        val backBtn = findViewById<ImageView>(R.id.back_btn)
+        backBtn.setOnClickListener {
+            finish()
+        }
 
         // 블루투스 권한 요청
         if (ContextCompat.checkSelfPermission(
@@ -97,9 +105,7 @@ class Chat : AppCompatActivity() {
             }
             return@setOnEditorActionListener false
         }
-
     }
-
 
 
     /**
@@ -111,15 +117,13 @@ class Chat : AppCompatActivity() {
         val question = messageEdit!!.getText().toString().trim { it <= ' ' }
         if (question.isEmpty()) {
             addToChat("아무것도 입력하지 않으셨네요. 어떤 칵테일을 드시고 싶은가요?", Message.SENT_BY_BOT, false)
-            tvWelcome!!.visibility = View.GONE
         } else {
             addToChat(question, Message.SENT_BY_ME, false)
-            startDotsAnimation() // 메시지를 보낼 때 애니메이션 시작
+            animationManager.startDotsAnimation() // 애니메이션 매니저를 통해 시작
             CoroutineScope(Dispatchers.Main).launch {
                 callAPI(question)
             }
             messageEdit!!.text.clear()
-            tvWelcome!!.visibility = View.GONE
         }
     }
 
@@ -135,80 +139,12 @@ class Chat : AppCompatActivity() {
 
     // 응답 메시지를 추가하는 함수
     private fun addResponse(response: String?, hasButton: Boolean = false) {
-        stopDotsAnimation() // 응답을 추가할 때 기존 애니메이션 중지
+        animationManager.stopDotsAnimation() // 애니메이션 매니저를 통해 중지
         if (messageList!!.isNotEmpty() && messageList!!.last().sentBy == Message.SENT_BY_BOT) {
             messageList!!.removeAt(messageList!!.size - 1)
         }
-        recommendReason = response
-        addToChat("", Message.SENT_BY_BOT, hasButton) // 빈 문자열로 새로운 메시지 추가
-        startTextAnimation() // 새로운 애니메이션 시작
-    }
-
-    // 애니메이션 시작 함수
-    private fun startDotsAnimation() {
-        dots = ""
-        dotsRunnable = object : Runnable {
-            override fun run() {
-                dots += "."
-                if (dots.length > 3) dots = ""
-                updateDotsMessage()
-                handler.postDelayed(this, 500)
-            }
-        }
-        handler.post(dotsRunnable!!)
-    }
-
-    // 애니메이션 중지 함수
-    private fun stopDotsAnimation() {
-        handler.removeCallbacks(dotsRunnable!!)
-        dotsRunnable = null
-    }
-
-    // 애니메이션 메시지 업데이트 함수
-    private fun updateDotsMessage() {
-        if (messageList!!.isNotEmpty() && messageList!!.last().sentBy == Message.SENT_BY_BOT) {
-            messageList!!.last().message = dots
-            messageAdapter!!.notifyItemChanged(messageList!!.size - 1, "payload")
-            recyclerView!!.scrollToPosition(messageAdapter!!.itemCount - 1)
-        }
-    }
-
-    private fun startTextAnimation() {
-        currentCharIndex = 0
-        dotsRunnable = object : Runnable {
-            override fun run() {
-                if (recommendReason != null && currentCharIndex < recommendReason!!.length) {
-                    updateTextMessage(recommendReason!![currentCharIndex].toString())
-                    currentCharIndex++
-                    handler.postDelayed(this, 50)
-                } else {
-                    stopTextAnimation()
-                }
-            }
-        }
-        handler.post(dotsRunnable!!)
-    }
-
-    // 애니메이션 중지 함수
-    private fun stopTextAnimation() {
-        handler.removeCallbacks(dotsRunnable!!)
-        dotsRunnable = null
-    }
-
-    // 애니메이션 메시지 업데이트 함수
-    private fun updateTextMessage(char: String) {
-        if (messageList!!.isNotEmpty() && messageList!!.last().sentBy == Message.SENT_BY_BOT) {
-            messageList!!.last().message += char
-            messageAdapter!!.notifyItemChanged(messageList!!.size - 1)
-            recyclerView!!.post {
-                val lastItemPosition = messageAdapter!!.itemCount - 1
-                val lastVisibleItemPosition = (recyclerView!!.layoutManager as LinearLayoutManager).findLastVisibleItemPosition()
-
-                if (lastItemPosition == lastVisibleItemPosition) {
-                    recyclerView!!.scrollToPosition(lastItemPosition)
-                }
-            }
-        }
+        addToChat("", Message.SENT_BY_BOT, hasButton)
+        animationManager.startTextAnimation(response) // 애니메이션 매니저를 통해 텍스트 애니메이션 시작
     }
 
 
@@ -409,6 +345,17 @@ class Chat : AppCompatActivity() {
                     val receivedData = String(buffer, 0, bytesRead)
                     Log.d("Bluetooth", "Data received: $receivedData")
 
+                    // 잔량 확인 후 부족하면 칵테일 제조 중단
+                    val receivedDataList = processData(receivedData)
+                    val recipeDataList = processData(data)
+
+                    if (!validateData(receivedDataList, recipeDataList)) {
+                        runOnUiThread {
+                            Toast.makeText(this@Chat, "잔량이 부족합니다!", Toast.LENGTH_SHORT).show()
+                        }
+                        return@Thread
+                    }
+
                     runOnUiThread {
                         Toast.makeText(applicationContext, "Data received: $receivedData", Toast.LENGTH_SHORT).show()
                     }
@@ -430,5 +377,19 @@ class Chat : AppCompatActivity() {
     companion object {
         private const val MY_SECRET_KEY = BuildConfig.API_KEY
         var recipeString: String? = null
+    }
+
+    private fun validateData(receivedData: List<Int>, recipeData: List<Int>): Boolean {
+        if (receivedData.size != recipeData.size) return false
+        for (i in receivedData.indices) {
+            if (receivedData[i] - recipeData[i] <= 2 && recipeData[i]>0) {
+                return false
+            }
+        }
+        return true
+    }
+
+    private fun processData(data: String): List<Int> {
+        return data.split("\n").mapNotNull { it.toIntOrNull() }
     }
 }
