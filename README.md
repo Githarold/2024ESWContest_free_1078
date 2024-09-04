@@ -47,6 +47,8 @@ BartendAiRtist를 통해 칵테일을 즐기고 싶다면 다음 단계를 따�
 
 아래는 BartendAiRtist의 시연 영상입니다. BartendAiRtist가 어떻게 작동하는지 확인해보세요!
 
+[![BartendAiRtist 시연](https://img.youtube.com/vi/bvOnANFl0nA/0.jpg)](https://youtu.be/bvOnANFl0nA)
+
 ## 📁 Project Structure
 
 ### 🔌 Arduino
