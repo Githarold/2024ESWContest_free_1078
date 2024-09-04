@@ -10,7 +10,7 @@ BartendAiRtist에 오신 것을 환영합니다, 당신의 취향과 기분에 �
 
 ## 📸 실물 사진
 
-![KakaoTalk_20240904_160336996](https://github.com/user-attachments/assets/1898ba7c-8bab-4310-af16-fe7fd42d0aa2)
+<img src="https://github.com/user-attachments/assets/1898ba7c-8bab-4310-af16-fe7fd42d0aa2" alt="KakaoTalk_20240904_160336996" width="40%">
 
 ## Table of Contents
 - [🌟 Features](#-features)
