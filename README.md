@@ -16,7 +16,7 @@ BartendAiRtist에 오신 것을 환영합니다, 당신의 취향과 기분에 �
 - [🌟 Features](#-features)
 - [📱 App Menu](#-app-menu)
 - [🚀 Getting Started](#-getting-started)
-- [📽️ Demo Results](#-demo-results)
+- [📽️ Demo Results](#%EF%B8%8F-demo-results)
 - [📁 Project Structure](#-project-structure)
 - [📞 Contact Us](#-contact-us)
 
