@@ -37,14 +37,6 @@ void setupReverseDelays() {
     }
 }
 
-// 설정된 딜레이로 모터를 작동시키는 함수
-void performSteps(int motor, const int delayArray[]) {
-    
-    for (int i = 0; i < sizeof(delays) / sizeof(int); i++) {
-        stepMotorSoftStart(motor, delayArray[i]);
-    }
-}
-
 // 모터 소프트 스타트 함수
 void softStart(int motor) {
     
@@ -92,7 +84,7 @@ void stepMotorSoftStart(int motor, int stepDelay) {
 }
 
 // 추가 스텝 수행 (빠른 속도)
-void performAdditionalSteps(int motor, int steps) {
+void stepMotorControl(int motor, int steps) {
     
     int d = 4;  
     for (int i = 0; i < steps; i++) {
@@ -137,7 +129,7 @@ void disableMotor(int motor) {
 // disk_step이 양수면 반시계방향, 음수면 시계방향으로 회전
 // disk_step이 1이면 한바퀴, 2이면 두바퀴 회전
 // 스텝 모터가 한 바퀴 회전하면 디스크는 다음 재료 위치로 이동
-void disk_rotate(int disk_step) {
+void diskRotate(int disk_step) {
     if (disk_step == 0) {
         return;  // 입력이 0이면 동작하지 않음
     }
@@ -156,51 +148,15 @@ void disk_rotate(int disk_step) {
     }
 
     softStart(motor);  // 모터 소프트 스타트
-    performAdditionalSteps(motor, abs(disk_step) * 50);  // 디스크 회전
+    stepMotorControl(motor, abs(disk_step) * 50);  // 디스크 회전
     softStop(motor);  // 모터 소프트 스탑
     disableMotor(motor);  // 모터 비활성화
 }
 
 
 
-// 엔드스탑 및 디바운싱 관련 설정
-
-
-
-const int endStopPin = 12;  // 엔드스탑 스위치가 연결된 핀
-int endStopState = 0;       // 현재 엔드스탑 상태
-int lastEndStopState = 0;   // 이전 엔드스탑 상태
-unsigned long lastDebounceTime = 0;  // 디바운싱 체크를 위한 마지막 시간
-unsigned long debounceDelay = 5;    // 디바운싱 지연 시간 (밀리초)
-
-
-
-// 엔드스탑 스위치가 눌렸는지 확인하고, 디바운싱 처리
-bool isEndStopTriggered() {
-    int reading = digitalRead(endStopPin);
-
-    // 상태 변화가 있는지 확인하고 디바운싱 처리
-    if (reading != lastEndStopState) {
-        lastDebounceTime = millis();  
-    }
-
-    if ((millis() - lastDebounceTime) > debounceDelay) {
-        if (reading != endStopState) {
-            endStopState = reading;
-
-            // 엔드스탑이 눌렸을 때 상태를 트리거
-            if (endStopState == LOW) {
-                lastEndStopState = reading;  
-                return true;
-            }
-        }
-    }
-
-    lastEndStopState = reading;  
-    return false;  // 엔드스탑이 트리거되지 않음
-}
-
-void fullstep(int stepDelay) {
+// 초기 위치 설정용 디스크 회전 함수
+void initRotate(int stepDelay) {
     for (int i = 0; i < 4; i++) {
         switch (i) {
             case 0:
@@ -234,20 +190,3 @@ void fullstep(int stepDelay) {
     }
 }
 
-void halfstep_thermo(int stepDelay) {
-    for (int i = 0; i < 8; i++) {
-        digitalWrite(IN1[1], i == 0 || i == 1 || i == 2 || i == 3 ? HIGH : LOW);
-        digitalWrite(IN2[1], i == 5 || i == 6 || i == 7 || i == 0 ? HIGH : LOW);
-        digitalWrite(IN3[1], i == 0 || i == 7 || i == 6 || i == 4 ? HIGH : LOW);
-        digitalWrite(IN4[1], i == 3 || i == 4 || i == 5 || i == 2 ? HIGH : LOW);
-        
-        delay(stepDelay);
-        
-//        // 전류 감소를 위한 짧은 딜레이
-//        digitalWrite(IN1[1], LOW);
-//        digitalWrite(IN2[1], LOW);
-//        digitalWrite(IN3[1], LOW);
-//        digitalWrite(IN4[1], LOW);
-//        delay(stepDelay / 2);
-    }
-}

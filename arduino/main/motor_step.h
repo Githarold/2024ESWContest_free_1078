@@ -22,9 +22,6 @@ void setupMotorPins(int motor);
 // 역방향 딜레이를 설정하는 함수
 void setupReverseDelays();
 
-// 스텝 실행 함수
-void performSteps(int motor, const int delayArray[]);
-
 // 모터를 부드럽게 시작하는 함수
 void softStart(int motor);
 
@@ -35,29 +32,16 @@ void softStop(int motor);
 void stepMotorSoftStart(int motor, int stepDelay);
 
 // 추가 스텝 실행 함수
-void performAdditionalSteps(int motor, int steps);
+void stepMotorControl(int motor, int steps);
 
+// 모터 비활성화
 void disableMotor(int motor);
+
 // 디스크 회전 함수
-void disk_rotate(int disk_step);
+void diskRotate(int disk_step);
 
-
-
-
-
-
-////////////////////////////
-
-void fullstep(int stepDelay);
-// 엔드스탑 핀 설정
-void setupEndStop();
-
-// 엔드스탑이 트리거되었는지 확인
-bool isEndStopTriggered();
-
-
-
-void halfstep_thermo(int stepDelay);
+// 초기 위치 설정용 디스크 회전 함수
+void initRotate(int stepDelay);
 
 
 #endif

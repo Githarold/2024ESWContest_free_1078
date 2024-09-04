@@ -9,7 +9,7 @@ int IN7 = 10;   // 모터 입력 1
 int IN8 = 8;  // 모터 입력 2
 
 //dc모터 시계방향 회전 함수
-void dc_cw(int power, int time) {
+void dcMotorCW(int power, int time) {
     // 모터 초기화
     digitalWrite(END, LOW);
     digitalWrite(IN7, LOW);
@@ -35,7 +35,7 @@ void dc_cw(int power, int time) {
 }
 
 //dc모터 반시계방향 회전 함수
-void dc_ccw(int power, int time) {
+void dcMotorCCW(int power, int time) {
     // 모터 초기화 및 속도 증가(소프트 스타트)
     digitalWrite(END, LOW);
     digitalWrite(IN7, LOW);
@@ -59,11 +59,11 @@ void dc_ccw(int power, int time) {
     }
 }
 
-void stir(int power, int time, int count) {
+void stirCocktail(int power, int time, int count) {
     // 주어진 횟수만큼 시계 방향 및 반시계 방향 회전 반복
     for (int i = 0; i < count; i++) {
-        dc_cw(power, time);
-        dc_ccw(power, time);
+        dcMotorCW(power, time);
+        dcMotorCCW(power, time);
     }
-    dc_cw(0, 2000);  // 모터 정지
+    dcMotorCW(0, 2000);  // 모터 정지
 }
