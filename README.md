@@ -39,11 +39,164 @@ BartendAiRtist를 통해 칵테일을 즐기고 싶다면 다음 단계를 따�
 2. **메뉴 선택:** 메뉴를 탭하여 칵테일 리스트, 칵테일 추천 받기, 칵테일 커스텀 중 선택하세요.
 3. **AI 바텐더와 대화:** 개인 맞춤형 추천을 받거나 음료를 만들기 위해, 우리의 AI 바텐더와 대화하세요.
 4. **선택하기:** AI 제안, 커스텀 옵션, 또는 칵테일 리스트에서 선호하는 칵테일을 선택하세요.
-5. **모든 것을 잊고 취하기:** 우리의 스마트 바텐더가 칵테일을 준비하는 것을 지켜보세요. 건배!!!
+5. **모든 것을 잊고 취하기:** 스마트 바텐더가 칵테일을 준비하는 것을 지켜보세요. 건배!!!
 
 ## 📽️ Demo Results
 
 아래는 BartendAiRtist의 시연 영상입니다. BartendAiRtist가 어떻게 작동하는지 확인해보세요!
+
+## 📁 Project Structure
+
+### 🔌 Arduino
+```
+├── main
+│   ├── main.ino
+│   ├── motor_dc.cpp
+│   ├── motor_dc.h
+│   ├── motor_servo.cpp
+│   ├── motor_servo.h
+│   ├── motor_step.cpp
+│   └── motor_step.h
+└── testcode.py
+```
+
+### 📱 Android App
+```
+├── app
+│   ├── build.gradle.kts
+│   ├── proguard-rules.pro
+│   └── src
+│       ├── androidTest
+│       │   └── java
+│       │       └── com
+│       │           └── example
+│       │               └── project
+│       │                   └── ExampleInstrumentedTest.kt
+│       ├── main
+│       │   ├── AndroidManifest.xml
+│       │   ├── assets
+│       │   │   ├── baybreeze.json
+│       │   │   ├── cosmopolitan.json
+│       │   │   ├── greyhound.json
+│       │   │   ├── hurricane.json
+│       │   │   ├── lemondropmartini.json
+│       │   │   ├── longbeachicedtea.json
+│       │   │   ├── planterspunch.json
+│       │   │   ├── reddevil.json
+│       │   │   ├── screwdriver.json
+│       │   │   ├── seabreeze.json
+│       │   │   └── whitelady.json
+│       │   ├── java
+│       │   │   └── com
+│       │   │       └── example
+│       │   │           └── project
+│       │   │               ├── BluetoothManager.kt
+│       │   │               ├── Chat.kt
+│       │   │               ├── Choose.kt
+│       │   │               ├── ChooseCustomMethod.kt
+│       │   │               ├── Cocktail.kt
+│       │   │               ├── CocktaillistAdapter.kt
+│       │   │               ├── Custom.kt
+│       │   │               ├── Dev.kt
+│       │   │               ├── Ingredient.kt
+│       │   │               ├── IngredientAdapter.kt
+│       │   │               ├── MainActivity.kt
+│       │   │               ├── Message.kt
+│       │   │               ├── MessageAdapter.kt
+│       │   │               ├── Pairing.kt
+│       │   │               ├── SetBuildOrder.kt
+│       │   │               ├── SetBuildOrderAdapter.kt
+│       │   │               └── select.kt
+│       │   └── res
+│       │       ├── drawable
+│       │       │   ├── baybreeze.png
+│       │       │   ├── btn_background.xml
+│       │       │   ├── btn_circle.xml
+│       │       │   ├── cosmopolitan.png
+│       │       │   ├── edit_background.xml
+│       │       │   ├── greyhound.png
+│       │       │   ├── hurricane.png
+│       │       │   ├── ic_launcher_background.xml
+│       │       │   ├── ic_launcher_foreground.xml
+│       │       │   ├── lemondropmartini.png
+│       │       │   ├── longbeachicedtea.png
+│       │       │   ├── planterspunch.png
+│       │       │   ├── reddevil.png
+│       │       │   ├── screwdriver.png
+│       │       │   ├── seabreeze.png
+│       │       │   ├── ssam.png
+│       │       │   ├── textview_background.xml
+│       │       │   └── whitelady.png
+│       │       ├── layout
+│       │       │   ├── activity_chat.xml
+│       │       │   ├── activity_choose.xml
+│       │       │   ├── activity_choosecustommethod.xml
+│       │       │   ├── activity_custom.xml
+│       │       │   ├── activity_dev.xml
+│       │       │   ├── activity_main.xml
+│       │       │   ├── activity_pairing.xml
+│       │       │   ├── activity_select.xml
+│       │       │   ├── activity_setbuildorder.xml
+│       │       │   ├── format_cocktail.xml
+│       │       │   ├── format_setbuildorder.xml
+│       │       │   ├── ingredient.xml
+│       │       │   └── send.xml
+│       │       ├── mipmap-anydpi
+│       │       │   ├── ic_launcher.xml
+│       │       │   └── ic_launcher_round.xml
+│       │       ├── mipmap-hdpi
+│       │       │   ├── ic_launcher.webp
+│       │       │   └── ic_launcher_round.webp
+│       │       ├── mipmap-mdpi
+│       │       │   ├── ic_launcher.webp
+│       │       │   └── ic_launcher_round.webp
+│       │       ├── mipmap-xhdpi
+│       │       │   ├── ic_launcher.webp
+│       │       │   └── ic_launcher_round.webp
+│       │       ├── mipmap-xxhdpi
+│       │       │   ├── ic_launcher.webp
+│       │       │   └── ic_launcher_round.webp
+│       │       ├── mipmap-xxxhdpi
+│       │       │   ├── ic_launcher.webp
+│       │       │   └── ic_launcher_round.webp
+│       │       ├── values
+│       │       │   ├── colors.xml
+│       │       │   ├── strings.xml
+│       │       │   └── themes.xml
+│       │       ├── values-night
+│       │       │   └── themes.xml
+│       │       └── xml
+│       │           ├── backup_rules.xml
+│       │           └── data_extraction_rules.xml
+│       └── test
+│           └── java
+│               └── com
+│                   └── example
+│                       └── project
+│                           └── ExampleUnitTest.kt
+├── build.gradle.kts
+├── gradle
+│   ├── libs.versions.toml
+│   └── wrapper
+│       ├── gradle-wrapper.jar
+│       └── gradle-wrapper.properties
+├── gradle.properties
+├── gradlew
+├── gradlew.bat
+└── settings.gradle.kts
+```
+
+### 📡 Communication Module
+```
+├── cocktail.json
+├── parsing.py
+├── processing.py
+├── protocol.py
+├── protocol2serial.py
+├── protocol2serial1.py
+├── server.py
+└── write.py
+```
 
 ## 📞 Contact Us
 
