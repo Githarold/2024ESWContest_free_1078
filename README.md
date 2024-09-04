@@ -45,8 +45,6 @@ BartendAiRtist를 통해 칵테일을 즐기고 싶다면 다음 단계를 따�
 
 아래는 BartendAiRtist의 시연 영상입니다. BartendAiRtist가 어떻게 작동하는지 확인해보세요!
 
-[![BartendAiRtist 시연](https://img.youtube.com/vi/AzKcaZExot8/0.jpg)](https://youtu.be/AzKcaZExot8)
-
 ## 📞 Contact Us
 
 질문이나 피드백이 있으신가요? 여러분의 의견을 언제나 환영합니다! [harold3312@naver.com](mailto:harold3312@naver.com)으로 연락주세요.
