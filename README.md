@@ -205,3 +205,8 @@ BartendAiRtist를 통해 칵테일을 즐기고 싶다면 다음 단계를 따�
 ## 📞 Contact Us
 
 여러분의 의견을 언제나 환영합니다! [harold3312@naver.com](mailto:harold3312@naver.com)으로 연락주세요!
+
+## Acknowledgments
+
+This app uses parts of the code from the [openai-kotlin](https://github.com/aallam/openai-kotlin) repository.
+
