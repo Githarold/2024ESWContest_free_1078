@@ -1,13 +1,21 @@
 // main.ino
 
 #include <Arduino.h>
+#include <AccelStepper.h>
 // 모터 제어 라이브러리 포함
 #include "motor_step.h"  
 #include "motor_dc.h"    
 #include "motor_servo.h" 
+#include <Adafruit_NeoPixel.h>
+#include "neopixel.h"
 
 
 #define MAX_SIZE 10  // 명령 리스트의 최대 크기를 10으로 설정
+
+#define NEO_PIN 22
+#define NUMPIXELS 24
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMPIXELS, NEO_PIN, NEO_GRB + NEO_KHZ800);
 
 int disk_rotate_list[MAX_SIZE];      // 디스크 회전 명령 리스트
 int dispenser_push_list[MAX_SIZE];   // 디스펜서 푸시 명령 리스트
@@ -21,11 +29,11 @@ void setup() {
     Serial.begin(9600);  // 시리얼 통신을 9600 baud rate로 설정
 
     // 스텝 모터 핀 설정
-    setupMotorPins(0);  
-    setupMotorPins(1);  
+    setupStepper();
+    disableMotor();
 
     // 역방향 동작을 위한 딜레이 설정
-    setupReverseDelays();  
+
 
     // DC 모터 핀 설정
     pinMode(END, OUTPUT);
@@ -41,6 +49,9 @@ void setup() {
     pinMode(11, OUTPUT);  // 서보 모터 핀을 OUTPUT으로 설정
     digitalWrite(11, LOW);  // 신호 핀을 LOW로 설정하여 잔류 전압 제거
     delay(300);
+
+    strip.begin();
+    strip.show(); // 모든 LED 끄기
 }
 
 // 시리얼 데이터를 확인하고, 파싱하여 명령을 실행하는 메인함수
@@ -58,29 +69,43 @@ void loop() {
 
         // 컵의 초기위치 설정을 위해 initSetup()을 호출, endstop switch 작동 대기
         initSetup();
+        disableMotor();
 
         initServo();
+
+        // 리스트에 저장된 명령을 순차적으로 실행
+        int totalSteps = sumOfDispenserPushList();  // 전체 단계 수 (dispenser_push_list의 길이)
+        int stepCounter = 0;  // 네오픽셀 제어를 위한 단계 카운터
         
         // 리스트에 저장된 명령을 순차적으로 실행
         for (int i = 0; i < listSize; i++) {
+            setupStepper();
             diskRotate(disk_rotate_list[i]);  // 디스크 회전
             delay(1000);  // 1초 대기
+            disableMotor();
            
             for (int j = 0; j < dispenser_push_list[i]; j++) {
                 dispenserActivate();  // 디스펜서 푸시
                 delay(100);
-                
+                stepCounter++;  // 네오픽셀 제어를 위한 단계 증가
+                white(strip, stepCounter, totalSteps);  // 단계에 따라 네오픽셀 켜기
+                disableMotor();
             }
         }
 
         // DC 모터 상태가 1이면 모터를 동작시킴
         if (dc_motor_state == 1) {
+            purple(strip);
             stirCocktail(127, 500, 3);  // 음료 혼합
             delay(500);  // 1초 대기
+            disableMotor();
+           
         }
 
         Serial.println("9");  // 완료 신호를 전송
         initServo();
+        blue(strip);
+        disableMotor();
     }
     
 }
@@ -134,21 +159,40 @@ void parseData(String data) {
     dispenser_push_list[dispenserCount] = dispenserData.substring(startPos).toInt();  
 }
 
-
+int sumOfDispenserPushList() {
+    int sum = 0;
+    for (int i = 0; i < listSize; i++) {
+        sum += dispenser_push_list[i];
+    }
+    return sum;
+}
 
 void initSetup() {
+    // 모터 초기화
+    setupStepper();
+
+    // 엔드스탑이 눌려 있으면 종료
     if (digitalRead(endStopPin) == LOW) {
-        // 엔드스탑이 이미 눌려 있으면 아무 작업도 하지 않음
         return;
-    } else {
-        digitalWrite(ENA[1], HIGH);
-        digitalWrite(ENB[1], HIGH);
-
-        // 엔드스탑이 눌릴 때까지 계속 스텝 수행
-        while (digitalRead(endStopPin) != LOW) {
-            initRotate(15);
-        }
-
-        disableMotor(0);  // 모터 정지
     }
+
+
+    
+    else{
+      red(strip);
+      stepper.setSpeed(2000.0);         // 현재 속도 설정 (스텝/초)
+      // 엔드스탑이 눌릴 때까지 모터를 회전시킴
+      while (digitalRead(endStopPin) != LOW) {
+        
+        stepper.runSpeed();  // 일정한 속도로 회전
+
+        delay(1);
+    }
+    }
+
+    
+
+
+    disableMotor();
+    green(strip);
 }

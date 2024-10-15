@@ -2,191 +2,109 @@
 
 #include "motor_step.h"
 
-// 모터 A와 B의 핀 설정 (역방향 구동을 위해 리스트로 설정)
-const int ENA[2] = {2, 2}; 
-int IN1[2] = {6, 3};       
-int IN2[2] = {7, 4};       
-const int ENB[2] = {5, 5}; 
-int IN3[2] = {3, 6};       
-int IN4[2] = {4, 7};       
+// AccelStepper 객체 생성 (DRIVER 모드 사용)
+AccelStepper stepper(AccelStepper::DRIVER, STEP_PIN, DIR_PIN);
 
-// 소프트 스타트/스탑에 사용될 딜레이 값 배열
-// 25개의 스텝에 대한 딜레이 값은 다음 식을 기반으로 계산됨: y = 49 * e^(-0.19 * x) + 4
-// 여기서 x는 스텝 번호, y는 해당 스텝의 딜레이 (밀리초)
-const int delays[] = {45, 38, 32, 27, 23, 20, 17, 15, 13, 11, 10, 9, 8, 7, 7, 6, 6, 6, 5, 5, 5, 5, 5, 5, 4};
-int reverseDelays[sizeof(delays) / sizeof(int)];
+// 마이크로스텝 해상도 설정 (A4988 기준)
+const int MICROSTEPPING = 16; // 1/16 스텝
 
-// 모터 핀 모드 설정 및 초기화
-void setupMotorPins(int motor) {
-    
-    pinMode(ENA[motor], OUTPUT);
-    pinMode(IN1[motor], OUTPUT);
-    pinMode(IN2[motor], OUTPUT);
-    pinMode(ENB[motor], OUTPUT);
-    pinMode(IN3[motor], OUTPUT);
-    pinMode(IN4[motor], OUTPUT);
-    digitalWrite(ENA[motor], LOW);
-    digitalWrite(ENB[motor], LOW);
+// 가속도 및 최대 속도 설정
+float MAX_SPEED = 12800.0;         // 최대 속도: 9600 마이크로스텝/초
+float ACCELERATION = 6400.0;    // 가속도: 28800 마이크로스텝/초²
+
+// 이동할 총 스텝 수
+long TOTAL_STEPS = 0;
+
+// 초기 딜레이 (밀리초)
+const unsigned long INITIAL_DELAY = 500;
+
+// *** 마이크로스텝 해상도 설정 함수 ***
+void setMicrostepping(int microstepping) {
+    switch (microstepping) {
+        case 1:  // Full Step
+            digitalWrite(MS1_PIN, LOW);
+            digitalWrite(MS2_PIN, LOW);
+            digitalWrite(MS3_PIN, LOW);
+            break;
+        case 2:  // Half Step
+            digitalWrite(MS1_PIN, HIGH);
+            digitalWrite(MS2_PIN, LOW);
+            digitalWrite(MS3_PIN, LOW);
+            break;
+        case 4:  // Quarter Step
+            digitalWrite(MS1_PIN, LOW);
+            digitalWrite(MS2_PIN, HIGH);
+            digitalWrite(MS3_PIN, LOW);
+            break;
+        case 8:  // Eighth Step
+            digitalWrite(MS1_PIN, HIGH);
+            digitalWrite(MS2_PIN, HIGH);
+            digitalWrite(MS3_PIN, LOW);
+            break;
+        case 16: // Sixteenth Step
+            digitalWrite(MS1_PIN, HIGH);
+            digitalWrite(MS2_PIN, HIGH);
+            digitalWrite(MS3_PIN, HIGH);
+            break;
+        default: // Default to Full Step if invalid
+            digitalWrite(MS1_PIN, LOW);
+            digitalWrite(MS2_PIN, LOW);
+            digitalWrite(MS3_PIN, LOW);
+            break;
+    }
+
 }
 
-// 딜레이 배열을 역순으로 설정하는 함수
-void setupReverseDelays() {
+// *** 스텝퍼를 움직이는 함수 ***
+void moveStepper(long steps) {
+    stepper.moveTo(stepper.currentPosition() + steps);
     
-    for (int i = 0; i < sizeof(delays) / sizeof(int); i++) {
-        reverseDelays[i] = delays[sizeof(delays) / sizeof(int) - 1 - i];
+    // 목표 위치에 도달할 때까지 실행
+    while (stepper.distanceToGo() != 0) {
+        stepper.run();
     }
 }
 
-// 모터 소프트 스타트 함수
-void softStart(int motor) {
+// *** 스텝퍼 초기 설정 함수 ***
+void setupStepper() {
+    digitalWrite(ENABLE_PIN, LOW);
+    // 핀 모드 설정
+    pinMode(MS1_PIN, OUTPUT);
+    pinMode(MS2_PIN, OUTPUT);
+    pinMode(MS3_PIN, OUTPUT);
+
+    // 마이크로스텝 설정
+    setMicrostepping(MICROSTEPPING);
     
-    for (int i = 0; i < sizeof(delays) / sizeof(delays[0]); i++) {
-        stepMotorSoftStart(motor, delays[i]);
-    }
+    // AccelStepper 설정
+    stepper.setMaxSpeed(MAX_SPEED);         // 최대 속도 설정
+    stepper.setAcceleration(ACCELERATION);  // 가속도 설정
+    
+  
 }
 
-// 모터 소프트 스탑 함수
-void softStop(int motor) {
-    
-    for (int i = sizeof(delays) / sizeof(delays[0]) - 1; i >= 0; i--) {
-        stepMotorSoftStart(motor, delays[i]);
-    }
+// *** 모터 비활성화 함수 ***
+void disableMotor() {
+    digitalWrite(ENABLE_PIN, HIGH); // 모터 비활성화
 }
 
-// 스텝모터 풀스텝 제어
-void stepMotorSoftStart(int motor, int stepDelay) {
-    
-    digitalWrite(ENA[motor], HIGH);
-
-    digitalWrite(IN1[motor], HIGH);
-    digitalWrite(IN2[motor], LOW);
-    digitalWrite(IN3[motor], HIGH);
-    digitalWrite(IN4[motor], LOW);
-    delay(stepDelay);
-
-    digitalWrite(IN1[motor], HIGH);
-    digitalWrite(IN2[motor], LOW);
-    digitalWrite(IN3[motor], LOW);
-    digitalWrite(IN4[motor], HIGH);
-    delay(stepDelay);
-
-    digitalWrite(IN1[motor], LOW);
-    digitalWrite(IN2[motor], HIGH);
-    digitalWrite(IN3[motor], LOW);
-    digitalWrite(IN4[motor], HIGH);
-    delay(stepDelay);
-
-    digitalWrite(IN1[motor], LOW);
-    digitalWrite(IN2[motor], HIGH);
-    digitalWrite(IN3[motor], HIGH);
-    digitalWrite(IN4[motor], LOW);
-    delay(stepDelay);
-}
-
-// 추가 스텝 수행 (빠른 속도)
-void stepMotorControl(int motor, int steps) {
-    
-    int d = 4;  
-    for (int i = 0; i < steps; i++) {
-        digitalWrite(IN1[motor], HIGH);
-        digitalWrite(IN2[motor], LOW);
-        digitalWrite(IN3[motor], HIGH);
-        digitalWrite(IN4[motor], LOW);
-        delay(d);
-
-        digitalWrite(IN1[motor], HIGH);
-        digitalWrite(IN2[motor], LOW);
-        digitalWrite(IN3[motor], LOW);
-        digitalWrite(IN4[motor], HIGH);
-        delay(d);
-
-        digitalWrite(IN1[motor], LOW);
-        digitalWrite(IN2[motor], HIGH);
-        digitalWrite(IN3[motor], LOW);
-        digitalWrite(IN4[motor], HIGH);
-        delay(d);
-
-        digitalWrite(IN1[motor], LOW);
-        digitalWrite(IN2[motor], HIGH);
-        digitalWrite(IN3[motor], HIGH);
-        digitalWrite(IN4[motor], LOW);
-        delay(d);
-    }
-}
-
-// 모터 비활성화시키는 함수
-void disableMotor(int motor) {
-    
-    digitalWrite(ENA[motor], LOW);
-    digitalWrite(ENB[motor], LOW);
-    digitalWrite(IN1[motor], LOW);
-    digitalWrite(IN2[motor], LOW);
-    digitalWrite(IN3[motor], LOW);
-    digitalWrite(IN4[motor], LOW);
-}
-
-// 디스크 회전 로직
-// disk_step이 양수면 반시계방향, 음수면 시계방향으로 회전
-// disk_step이 1이면 한바퀴, 2이면 두바퀴 회전
-// 스텝 모터가 한 바퀴 회전하면 디스크는 다음 재료 위치로 이동
+// *** 디스크 회전 함수 ***
 void diskRotate(int disk_step) {
+    // 입력이 0이면 동작하지 않음
     if (disk_step == 0) {
-        return;  // 입력이 0이면 동작하지 않음
+        return;
     }
 
-    int motor = 0;
-    if (disk_step > 0 && disk_step <= 7) {
-        motor = 0;  // 반시계방향
-        disk_step = disk_step - 1;
-        digitalWrite(ENB[motor], HIGH);
-    } else if (disk_step < 0 && disk_step >= -7) {
-        motor = 1;  // 시계방향
-        disk_step = disk_step + 1;
-        digitalWrite(ENB[motor], HIGH);
-    } else {
-        return;  // 유효하지 않은 입력 값
-    }
+    // 방향 설정: 양수면 시계 방향, 음수면 반시계 방향
+    int direction = (disk_step > 0) ? -1 : 1;
+    
+    // 스텝 수 절대값으로 변환 (방향은 따로 설정되었으므로)
+    long steps = abs(disk_step) * 3200;  // 6400은 모터의 한 바퀴당 스텝 수 조정 가능
+    
+    // 가속도 및 최대 속도 설정
+    stepper.setMaxSpeed(MAX_SPEED);        // 최대 속도 설정
+    stepper.setAcceleration(ACCELERATION); // 가속도 설정
 
-    softStart(motor);  // 모터 소프트 스타트
-    stepMotorControl(motor, abs(disk_step) * 50);  // 디스크 회전
-    softStop(motor);  // 모터 소프트 스탑
-    disableMotor(motor);  // 모터 비활성화
+    // 방향 설정 및 스텝퍼 움직이기
+    moveStepper(direction * steps);  // 방향 곱해서 스텝 수 전달
 }
-
-
-
-// 초기 위치 설정용 디스크 회전 함수
-void initRotate(int stepDelay) {
-    for (int i = 0; i < 4; i++) {
-        switch (i) {
-            case 0:
-                digitalWrite(IN1[1], HIGH);
-                digitalWrite(IN2[1], LOW);
-                digitalWrite(IN3[1], HIGH);
-                digitalWrite(IN4[1], LOW);
-                break;
-            case 1:
-                digitalWrite(IN1[1], HIGH);
-                digitalWrite(IN2[1], LOW);
-                digitalWrite(IN3[1], LOW);
-                digitalWrite(IN4[1], HIGH);
-                break;
-            case 2:
-                digitalWrite(IN1[1], LOW);
-                digitalWrite(IN2[1], HIGH);
-                digitalWrite(IN3[1], LOW);
-                digitalWrite(IN4[1], HIGH);
-                break;
-            case 3:
-                digitalWrite(IN1[1], LOW);
-                digitalWrite(IN2[1], HIGH);
-                digitalWrite(IN3[1], HIGH);
-                digitalWrite(IN4[1], LOW);
-                break;
-        }
-        
-        delay(stepDelay);
-        
-    }
-}
-
