@@ -47,6 +47,8 @@ void disableMotor();
 // 디스크 회전 함수
 void diskRotate(int disk_step);
 
+void runMotorOneWay();
+
 
 
 #endif // MOTOR_STEP_H

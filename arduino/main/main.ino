@@ -8,6 +8,10 @@
 #include "motor_servo.h" 
 #include <Adafruit_NeoPixel.h>
 #include "neopixel.h"
+#include <Servo.h>
+
+
+
 
 
 #define MAX_SIZE 10  // 명령 리스트의 최대 크기를 10으로 설정
@@ -25,9 +29,9 @@ int dc_motor_state = 0;  // DC 모터의 상태를 저장하는 변수 (0: 정�
 int endStopPin = 12;  // 엔드스탑 스위치가 연결된 핀
 // 시리얼 통신, 모터 핀 설정 등 초기화 작업을 수행하는 함수
 void setup() {
-
+    digitalWrite(ENABLE_PIN, HIGH);
     Serial.begin(9600);  // 시리얼 통신을 9600 baud rate로 설정
-
+    digitalWrite(ENABLE_PIN, HIGH);
     // 스텝 모터 핀 설정
     setupStepper();
     disableMotor();
@@ -80,12 +84,21 @@ void loop() {
         // 리스트에 저장된 명령을 순차적으로 실행
         for (int i = 0; i < listSize; i++) {
             setupStepper();
+            digitalWrite(ENABLE_PIN, LOW);
             diskRotate(disk_rotate_list[i]);  // 디스크 회전
-            delay(1000);  // 1초 대기
+            delay(500);  // 1초 대기
             disableMotor();
            
             for (int j = 0; j < dispenser_push_list[i]; j++) {
-                dispenserActivate();  // 디스펜서 푸시
+                myservo.attach(11);
+                myservo.write(0);  // 서보를 0도로 회전
+                delay(3000);       // 5초 대기
+                myservo.write(50);  // 서보를 60도로 회전
+                if (j<dispenser_push_list[i]-1){
+                  delay(4000);        // 7초 대기
+                }
+                delay(100);
+                myservo.detach();
                 delay(100);
                 stepCounter++;  // 네오픽셀 제어를 위한 단계 증가
                 white(strip, stepCounter, totalSteps);  // 단계에 따라 네오픽셀 켜기
@@ -96,7 +109,7 @@ void loop() {
         // DC 모터 상태가 1이면 모터를 동작시킴
         if (dc_motor_state == 1) {
             purple(strip);
-            stirCocktail(127, 500, 3);  // 음료 혼합
+            stirCocktail(127, 1000, 3);  // 음료 혼합
             delay(500);  // 1초 대기
             disableMotor();
            
@@ -170,6 +183,7 @@ int sumOfDispenserPushList() {
 void initSetup() {
     // 모터 초기화
     setupStepper();
+    
 
     // 엔드스탑이 눌려 있으면 종료
     if (digitalRead(endStopPin) == LOW) {
@@ -180,19 +194,20 @@ void initSetup() {
     
     else{
       red(strip);
-      stepper.setSpeed(2000.0);         // 현재 속도 설정 (스텝/초)
+      
+             
       // 엔드스탑이 눌릴 때까지 모터를 회전시킴
       while (digitalRead(endStopPin) != LOW) {
         
-        stepper.runSpeed();  // 일정한 속도로 회전
+        runMotorOneWay();
 
-        delay(1);
+        
     }
     }
 
     
 
 
-    disableMotor();
+    
     green(strip);
 }

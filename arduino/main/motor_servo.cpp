@@ -12,7 +12,7 @@ void servoArmUp() {
 
 void servoArmDown() {
   myservo.write(50);  // 서보를 60도로 회전
-  delay(3000);        // 7초 대기
+  delay(4000);        // 7초 대기
 }
 
 void dispenserActivate() {

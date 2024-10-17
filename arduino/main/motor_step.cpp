@@ -67,7 +67,9 @@ void moveStepper(long steps) {
 
 // *** 스텝퍼 초기 설정 함수 ***
 void setupStepper() {
-    digitalWrite(ENABLE_PIN, LOW);
+    digitalWrite(ENABLE_PIN, HIGH);
+    // 안정화를 위해 약간의 딜레이
+    delay(50); 
     // 핀 모드 설정
     pinMode(MS1_PIN, OUTPUT);
     pinMode(MS2_PIN, OUTPUT);
@@ -107,4 +109,39 @@ void diskRotate(int disk_step) {
 
     // 방향 설정 및 스텝퍼 움직이기
     moveStepper(direction * steps);  // 방향 곱해서 스텝 수 전달
+
+    
+}
+
+void runMotorOneWay() {
+  disableMotor();
+  unsigned int delayTime = 300;  // 딜레이 (예: 156 마이크로초)
+  unsigned int direction = 1;    // 방향 (0 또는 1)
+  int endStopPin = 12;  // 엔드스탑 스위치가 연결된 핀
+  pinMode(STEP_PIN, OUTPUT);
+  pinMode(DIR_PIN, OUTPUT);
+  pinMode(MS1_PIN, OUTPUT);
+  pinMode(MS2_PIN, OUTPUT);
+  pinMode(MS3_PIN, OUTPUT);
+  pinMode(endStopPin, INPUT);  // 엔드스탑 핀 설정
+
+  // 마이크로스텝 설정 (여기서는 1/16 스텝 설정)
+  digitalWrite(MS1_PIN, HIGH);
+  digitalWrite(MS2_PIN, HIGH);
+  digitalWrite(MS3_PIN, HIGH);  // 1/16 스텝 분주 설정
+  digitalWrite(DIR_PIN, direction);
+  
+  // 무한 루프 대신 엔드스탑 상태를 확인하면서 모터를 한 방향으로 움직임
+  while (digitalRead(endStopPin) == HIGH) {  // 엔드스탑이 눌리지 않은 동안
+    // 한 스텝을 만들기 위한 HIGH/LOW 신호 출력
+    digitalWrite(ENABLE_PIN, LOW);
+    digitalWrite(STEP_PIN, LOW);
+    delayMicroseconds(delayTime);  // 딜레이
+    digitalWrite(STEP_PIN, HIGH);
+    delayMicroseconds(delayTime);  // 딜레이
+  }
+
+  // 엔드스탑이 눌리면 모터를 멈춤
+  
+
 }
