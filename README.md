@@ -2,13 +2,13 @@
 
 ![AI](https://github.com/Githarold/BartendAiRtist/assets/101968287/77cd479b-e9c5-4142-9f24-73aca56d9382)
 
-BartendAiRtist에 오신 것을 환영합니다, 당신의 취향과 기분에 딱 맞춘 칵테일을 만들어 드립니다!
+Welcome to BartendAiRtist, your personal cocktail assistant, crafting drinks tailored to your preferences and mood!
 
-생성형 AI (Chat GPT API)를 활용한 BartendAiRtist는 당신의 칵테일 여정을 시작하도록 해줄 혁신적인 임베디드 시스템입니다. 안드로이드 앱에서 AI 바텐더와 대화를 나누고, 취향과 현재 기분을 말하기만 하면, 마법이 시작됩니다.
+Powered by generative AI (Chat GPT API), BartendAiRtist is an innovative embedded system designed to elevate your cocktail experience. Simply chat with the AI bartender via the Android app, share your preferences and mood, and let the magic happen.
 
-새로운 것을 원하든, 클래식한 칵테일을 원하든, 혹은 음료를 커스텀하고 싶든, BartendAiRtist는 개인화된 경험을 제공한 후, 즉석에서 완벽한 칵테일을 준비합니다.
+Whether you’re in the mood for something new, a classic cocktail, or a customized drink, BartendAiRtist provides a personalized experience and prepares the perfect cocktail on the spot.
 
-## 📸 실물 사진
+## 📸 Real-life Photos
 
 <img src="https://github.com/user-attachments/assets/1898ba7c-8bab-4310-af16-fe7fd42d0aa2" alt="KakaoTalk_20240904_160336996" width="40%">
 
@@ -22,31 +22,30 @@ BartendAiRtist에 오신 것을 환영합니다, 당신의 취향과 기분에 �
 
 ## 🌟 Features
 
-- **📲 개인 맞춤형 칵테일 추천:** 당신의 기분과 선호도를 말하며 당신만을 위한 칵테일 제안을 받아보세요.
-- **🤖 자동 칵테일 준비:** 선택을 하면, 선택을 바탕으로 당신에게 완벽한 음료를 제공합니다.
-- **💬 상호작용 챗 인터페이스:** 우리의 AI와 대화를 나누며 당신의 취향을 저격할 칵테일을 발견하세요.
-- **👍 사용자 친화적인 안드로이드 애플리케이션:** 언제 어디서나 우리의 쉽게 사용할 수 있는 안드로이드 앱으로 BartendAiRtist에 접속하세요.
+- **📲 Personalized Cocktail Recommendations:** Get cocktail suggestions tailored to your mood and preferences.
+- **🤖 Automated Cocktail Preparation:** Enjoy perfectly prepared drinks based on your selections.
+- **💬 Interactive Chat Interface:** Chat with our AI to discover cocktails that match your taste.
+- **👍 User-friendly Android Application:** Access BartendAiRtist through our easy-to-use Android app anytime, anywhere.
 
 ## 📱 App Menu
 
-- **🔍 칵테일 추천 받기:** 현재 기분과 선호도를 바탕으로 AI가 제공하는 개인 맞춤형 칵테일 추천을 받아보세요.
-- **📖 칵테일 리스트:** 클래식하고 인기 있는 칵테일의 리스트를 탐색하여 좋아하는 칵테을 찾아보세요.
-- **✨ 칵테일 커스텀:** 원하는 재료와 양을 지정하여 나만의 독특한 칵테일을 만드세요.
+- **🔍 Get Cocktail Recommendations:** Receive personalized cocktail suggestions based on your current mood and preferences.
+- **📖 Explore Cocktail List:** Browse a list of classic and popular cocktails to find your favorites.
+- **✨ Customize Cocktails:** Specify ingredients and quantities to create your unique cocktail.
 
 ## 🚀 Getting Started
 
-BartendAiRtist를 통해 칵테일을 즐기고 싶다면 다음 단계를 따라주세요:
+Follow these steps to enjoy cocktails with BartendAiRtist:
 
-1. **앱 다운로드:** BartendAiRtist 애플리케이션을 스마트폰에 설치하세요.
-2. **메뉴 선택:** 메뉴를 탭하여 칵테일 리스트, 칵테일 추천 받기, 칵테일 커스텀 중 선택하세요.
-3. **AI 바텐더와 대화:** 개인 맞춤형 추천을 받거나 음료를 만들기 위해, 우리의 AI 바텐더와 대화하세요.
-4. **선택하기:** AI 제안, 커스텀 옵션, 또는 칵테일 리스트에서 선호하는 칵테일을 선택하세요.
-5. **모든 것을 잊고 취하기:** 스마트 바텐더가 칵테일을 준비하는 것을 지켜보세요. 건배!!!
+1. **Download the App:** Install the BartendAiRtist application on your smartphone.
+2. **Choose a Menu:** Tap a menu to select from Cocktail List, Get Recommendations, or Customize Cocktails.
+3. **Chat with the AI Bartender:** Interact with our AI bartender for personalized suggestions or drink creation.
+4. **Make a Selection:** Choose your preferred cocktail from AI suggestions, custom options, or the Cocktail List.
+5. **Watch the Magic:** Sit back and let the smart bartender prepare your drink. Cheers!
 
 ## 📽️ Demo Results
 
-아래는 BartendAiRtist의 시연 영상입니다. BartendAiRtist가 어떻게 작동하는지 확인해보세요!
-
+Here’s a demo of BartendAiRtist in action. See how it works!
 [![BartendAiRtist 시연](https://img.youtube.com/vi/bvOnANFl0nA/0.jpg)](https://youtu.be/bvOnANFl0nA)
 
 ## 📁 Project Structure
@@ -204,9 +203,8 @@ BartendAiRtist를 통해 칵테일을 즐기고 싶다면 다음 단계를 따�
 
 ## 📞 Contact Us
 
-여러분의 의견을 언제나 환영합니다! [harold3312@naver.com](mailto:harold3312@naver.com)으로 연락주세요!
+We always welcome your feedback! Feel free to contact us at [harold3312@naver.com](mailto:harold3312@naver.com).
 
 ## 📄 Acknowledgments
 
 This app uses parts of the code from the [openai-kotlin](https://github.com/aallam/openai-kotlin) repository.
-
